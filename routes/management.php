@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::prefix('management')->group( function (){
-    Route::apiResource('users', UsersController::class)
-        ->parameter('users','id');
+    Route::apiResource('users', UsersController::class);
     Route::patch('password',[PasswordController::class,'update']);
 });

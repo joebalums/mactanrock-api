@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
-Route::middleware('auth')->group( function (){
-    require  __DIR__.'/management.php';
-});
+
 
 require __DIR__.'/auth.php';
