@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class CategoryRequest extends FormRequest
+class BranchRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,8 @@ class CategoryRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required','string','max:225', Rule::unique('categories')->ignore($this->id)]
+            'name' => ['required','string','max:225', Rule::unique('branches')->ignore($this->id)],
+            'address' => ['required','string','max:225']
         ];
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\UserRequest;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\UserServices;
 
 class UsersController extends Controller
@@ -39,8 +40,10 @@ class UsersController extends Controller
         return UserResource::make($user);
     }
 
-    public function delete()
+    public function destroy(int $id)
     {
-        //TODO delete hard or soft
+        $user = User::query()->findOrFail($id);
+        $user->delete();
+        return UserResource::make($user);
     }
 }
