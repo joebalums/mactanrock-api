@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Managements;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\BranchRequest;
 use App\Http\Resources\BranchResource;
 use App\Models\Branch;
 
-class BranchesController extends \App\Http\Controllers\Controller
+class BranchesController extends Controller
 {
 
     public function index()
