@@ -12,7 +12,7 @@ class ProductServices
     {
         return Product::query()
             ->latest()
-            ->get();
+            ->paginate( request('paginate',12));
     }
     public function create(Request $request)
     {
