@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class RequisitionDetailsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,9 +14,12 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
+        return [
+            'id' => $this->id,
+            'product' => ProductResource::make($this->whenLoaded('product')),
+            'quantity' => $this->quantity,
+            'status' => $this->status,
 
-        return array_merge(parent::toArray($request),[
-            'branch' => BranchResource::make($this->whenLoaded('branch'))
-        ]);
+        ];
     }
 }

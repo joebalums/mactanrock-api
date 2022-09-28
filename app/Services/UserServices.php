@@ -15,11 +15,13 @@ class UserServices
     {
         return User::query()
             ->latest()
-            ->paginate($take);
+            ->paginate(is_integer(request('paginate',12)) ?request('paginate'):0);
     }
 
     public function create(array $data, mixed $type): User
     {
+        $user = request()->user();
+
         $user = new User();
         $user->firstname = $data['firstname'];
         $user->lastname = $data['lastname'];
@@ -30,6 +32,11 @@ class UserServices
         $user->email = $data['email'];
         $user->password = bcrypt($data['password']);
         $user->user_type = $type;
+        if(is_null($user?->branch_id)){
+            $user->branch_id = request()->get('branch_id');
+        } else{
+            $user->branch_id = $user?->branch_id;
+        }
 
         $user->save();
 

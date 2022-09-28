@@ -33,7 +33,8 @@ class UserRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users','email')->ignore($this->id)],
             'username' => ['required', 'string', 'email', 'max:255',Rule::unique('users','username')->ignore($this->id)],
             'password' => [Rule::requiredIf(is_null($this->id)), 'confirmed', Rules\Password::defaults()],
-            'avatar'    => ['nullable','image']
+            'avatar'    => ['nullable','image'],
+            'branch_id' => ['nullable', Rule::exists('branches','id')]
         ];
     }
 }

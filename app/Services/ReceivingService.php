@@ -19,7 +19,7 @@ class ReceivingService
             ])
             ->when(!is_null($branch_id), fn($q) => $q->where('branch_id', $branch_id))
             ->latest()
-            ->paginate(request()->get('paginate',12));
+            ->paginate(is_integer(request('paginate',12)) ?request('paginate'):0);
     }
     public function create(Request $request)
     {
@@ -59,6 +59,15 @@ class ReceivingService
         $receiving->save();
 
         return $receiving;
+    }
+
+    public function show(int $id)
+    {
+        return Receive::query()->with([
+            'details' => [
+                'product'
+            ]
+        ])->findOrFail($id);
     }
 
 }

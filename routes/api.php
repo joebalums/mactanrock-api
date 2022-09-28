@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,14 +17,16 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [\App\Http\Controllers\LoginController::class,'store']);
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+    $user = $request->user();
+    $user->load('branch');
+    return UserResource::make($user);
 });
 
 Route::middleware(['auth:sanctum'])->group(function (){
     require  __DIR__.'/management.php';
 
     Route::prefix('inventory')->group( function (){
-       require __DIR__.'/inventory/receiving.php';
+       require __DIR__.'/inventory.php';
     });
 });
 

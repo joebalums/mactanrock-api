@@ -10,15 +10,17 @@ class ProductServices
 
     public function get()
     {
+
         return Product::query()
             ->latest()
-            ->paginate( request('paginate',12));
+            ->paginate( is_integer(request('paginate',12)) ?request('paginate'):0 );
     }
     public function create(Request $request)
     {
+        $user = $request->user();
         $product = new Product();
         $this->itemInformation($request, $product);
-        $product->branch_id = $request->get('branch_id', 1);
+        $product->branch_id = $user->branch_id ?: 1;
 
         $product->save();
 
