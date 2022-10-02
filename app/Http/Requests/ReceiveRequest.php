@@ -32,8 +32,11 @@ class ReceiveRequest extends FormRequest
             'project_name' => ['required','string','max:255'],
             'status' => ['nullable', new Enum(ReceivingStatus::class)],
             'products' => ['required','array'],
+            'products.*'  => ['required',Rule::exists('procedures','id')->where('branch_id', $this->user()->branch_id)],
             'quantity' => ['required','array'],
-            'expired_at' => ['nullable','array']
+            'quantity.*' => ['required','integer','min:1'],
+            'expired_at' => ['nullable','array'],
+            'expired_at.*' => ['nullable','date','after:tomorrow']
         ];
     }
 }
