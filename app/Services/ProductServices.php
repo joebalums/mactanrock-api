@@ -18,11 +18,8 @@ class ProductServices
     }
     public function create(Request $request)
     {
-        $user = $request->user();
         $product = new Product();
         $this->itemInformation($request, $product);
-        $product->branch_id = $user->branch_id ?: 1;
-
         $product->save();
 
         return $product;
@@ -46,11 +43,11 @@ class ProductServices
     {
         $product->name = $request->get('name');
         $product->code = $request->get('code');
+        $product->brand = $request->get('brand',"");
         $product->description = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $request->get('description', ''));
         $product->category_id = $request->get('category_id');
         $product->unit_measurement = $request->get('unit_measurement');
         $product->unit_value = $request->get('unit_value');
-        $product->price = $request->get('price');
         $product->stock_low_level = $request->get('stock_low_level');
         $product->reorder_point = $request->get('reorder_point');
 

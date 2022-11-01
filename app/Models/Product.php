@@ -10,8 +10,5 @@ class Product extends Model
     use HasFactory;
 
 
-    public function location()
-    {
-        return $this->belongsTo(Branch::class,'branch_id');
-    }
+
 }

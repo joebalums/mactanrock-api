@@ -28,13 +28,13 @@ class ProductRequest extends FormRequest
 
         return [
             'name' => ['required','string','max:255'],
+            'brand' => ['nullable','string','max:255'],
             'code' => ['required','string', Rule::unique('products','code')->ignore($this->product)],
             'unit_measurement' => ['required','string','max:255'],
             'description' => ['required','string','max:7000'],
             'unit_value' => ['required','numeric'],
             'stock_low_level' => ['required','integer','min:1'],
             'reorder_point' => ['required','integer','min:1'],
-            'price' => ['required','numeric','min:1'],
 
         ];
     }

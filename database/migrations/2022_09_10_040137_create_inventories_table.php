@@ -27,6 +27,7 @@ return new class extends Migration
             $table->foreignId('from_request_id')->nullable();
             $table->foreignId('receive_id')->nullable();
             $table->foreignId('product_id')->constrained();
+            $table->foreignId('inventory_location_id');
             $table->timestamps();
         });
     }

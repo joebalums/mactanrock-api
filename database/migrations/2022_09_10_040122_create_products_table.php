@@ -22,11 +22,8 @@ return new class extends Migration
             $table->float('unit_value')->default(0);
             $table->unsignedInteger('stock_low_level')->default(0);
             $table->unsignedInteger('reorder_point')->default(0);
-            $table->double('price', 10, 2)->default(0);
-            $table->bigInteger('total_quantity')->default(0);
-            $table->bigInteger('quantity')->default(0);
+            $table->string('brand')->nullable();
             $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }
