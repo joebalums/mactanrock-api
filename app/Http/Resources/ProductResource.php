@@ -31,7 +31,7 @@ class ProductResource extends JsonResource
                 'total_quantity' => $this->total_quantity,
                 'quantity' => $this->quantity,
                 'price' => $this->price,
-
+                'product_id' => $this->productId
             ])
         ];
     }

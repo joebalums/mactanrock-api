@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Models\InventoryTransaction;
 use App\Models\Product;
 use App\Models\InventoryLocation;
+use Illuminate\Database\Eloquent\Builder;
 
 class InventoryServices
 {
@@ -17,8 +18,9 @@ class InventoryServices
         return InventoryLocation::query()
             ->with(['location'])
             ->join('products','inventory_locations.product_id','=','products.id')
-            ->select(['inventory_locations.*','products.*'])
-            ->get();
+            ->select(['inventory_locations.*','products.*', "products.id as productId"])
+            ->when( request('location_id'), fn(Builder $builder) => $builder->where('location_id',request('location_id') ))
+            ->paginate( request('paginate') ?:12 );
     }
     public function in(int|Product $product, int $quantity, array $data = [])
     {
