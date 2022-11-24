@@ -110,4 +110,16 @@ class RequisitionServices
 
         return $requisition;
     }
+
+    public function updateStatus(int $id, string $status, string $remarks = "")
+    {
+        $requisition = Requisition::query()->findOrFail($id);
+
+        $requisition->status = $status;
+        $requisition->remarks = $remarks;
+
+        $requisition->save();
+
+        return $requisition;
+    }
 }

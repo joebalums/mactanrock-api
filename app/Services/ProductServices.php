@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class ProductServices
@@ -12,7 +13,13 @@ class ProductServices
     {
 
         return Product::query()
+            ->with(['category'])
             ->when(request('location_id'), fn($query) => $query->where('branch_id',request('location_id') ) )
+            ->when( request('keyword'),
+                function(Builder $q){
+                    $keyword = request('keyword');
+                    return $q->whereRaw("CONCAT_WS(' ',name,code,brand) like '%{$keyword}%' ");
+                })
             ->latest()
             ->paginate( is_integer(request('paginate',12)) ? request('paginate'):0 );
     }
@@ -21,15 +28,17 @@ class ProductServices
         $product = new Product();
         $this->itemInformation($request, $product);
         $product->save();
+        $product->load('category');
 
         return $product;
     }
 
     public function update(Request $request , int $id)
     {
-        $product = Product::query()->where('branch_id', $request->get('branch_id', 1))->findOrFail($id);
+        $product = Product::query()->findOrFail($id);
         $this->itemInformation($request, $product);
         $product->save();
+        $product->load('category');
 
         return $product;
     }
@@ -48,8 +57,6 @@ class ProductServices
         $product->category_id = $request->get('category_id');
         $product->unit_measurement = $request->get('unit_measurement');
         $product->unit_value = $request->get('unit_value');
-        $product->stock_low_level = $request->get('stock_low_level');
-        $product->reorder_point = $request->get('reorder_point');
 
     }
 }

@@ -33,8 +33,7 @@ class ProductRequest extends FormRequest
             'unit_measurement' => ['required','string','max:255'],
             'description' => ['required','string','max:7000'],
             'unit_value' => ['required','numeric'],
-            'stock_low_level' => ['required','integer','min:1'],
-            'reorder_point' => ['required','integer','min:1'],
+            'category_id' => ['nullable', Rule::exists('categories','id')]
 
         ];
     }
