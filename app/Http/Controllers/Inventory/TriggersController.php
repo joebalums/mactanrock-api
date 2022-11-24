@@ -12,7 +12,7 @@ class TriggersController extends Controller
     public function update(InventoryServices $services, int $id)
     {
         request()->validate([
-            'stock_level' => ['required','integer','min:0'],
+            'stock_low_level' => ['required','integer','min:0'],
             'reorder_point'=> ['required','integer','min:0'],
         ]);
 

@@ -47,7 +47,7 @@ class InventoryServices
                 'products.unit_value','products.brand','products.category_id',
                 "products.id as productId"])
             ->findOrFail($id);
-        $inventory->stock_low_level = request()->get('stock_level');
+        $inventory->stock_low_level = request()->get('stock_low_level');
         $inventory->reorder_point = request()->get('reorder_point');
         $inventory->save();
 
