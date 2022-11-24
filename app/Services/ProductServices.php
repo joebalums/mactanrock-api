@@ -14,7 +14,6 @@ class ProductServices
 
         return Product::query()
             ->with(['category'])
-            ->when(request('location_id'), fn($query) => $query->where('branch_id',request('location_id') ) )
             ->when( request('keyword'),
                 function(Builder $q){
                     $keyword = request('keyword');
