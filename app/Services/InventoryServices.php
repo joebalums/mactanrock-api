@@ -39,7 +39,14 @@ class InventoryServices
 
     public function updateTriggers(int $id)
     {
-        $inventory = InventoryLocation::query()->findOrFail($id);
+        $inventory = InventoryLocation::query()
+            ->with(['location'])
+            ->join('products','inventory_locations.product_id','=','products.id')
+            ->select(['inventory_locations.*','products.name',
+                'products.code','products.description','products.unit_measurement',
+                'products.unit_value','products.brand','products.category_id',
+                "products.id as productId"])
+            ->findOrFail($id);
         $inventory->stock_low_level = request()->get('stock_level');
         $inventory->reorder_point = request()->get('reorder_point');
         $inventory->save();
