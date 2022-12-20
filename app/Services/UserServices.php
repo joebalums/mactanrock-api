@@ -77,6 +77,18 @@ class UserServices
         return $user;
     }
 
+
+    public function updatePassword(int $id)
+    {
+        $user = User::query()
+            ->where('id','!=',1)
+            ->findOrfail($id);
+
+        $user->password = request()->get('password');
+        $user->save();
+
+    }
+
     /**
      * @throws ValidationException
      */

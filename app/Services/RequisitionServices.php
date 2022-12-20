@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\RequisitionStatus;
 use App\Models\InventoryLocation;
 use App\Models\Product;
 use App\Models\Requisition;
@@ -23,6 +24,7 @@ class RequisitionServices
     public function requestList()
     {
         return RequisitionDetail::query()
+            ->whereHas('requisition' , fn($q) => $q->where('status', RequisitionStatus::Approved))
             ->with(['requisition' => [
                 'location',
                 'requester'
@@ -121,5 +123,13 @@ class RequisitionServices
         $requisition->save();
 
         return $requisition;
+    }
+
+
+    public function approvedRequisition(int $id): void
+    {
+        $requisition = Requisition::query()->where('status', RequisitionStatus::Pending)->findOrFail($id);
+        $requisition->status = RequisitionStatus::Approved;
+        $requisition->save();
     }
 }
