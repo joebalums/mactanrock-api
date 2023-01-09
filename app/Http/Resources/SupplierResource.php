@@ -22,6 +22,7 @@ class SupplierResource extends JsonResource
             'tin' => $this->tin,
             'code' => $this->code,
             'owner' => $this->owner,
+            'gl_account' => $this->gl_account,
             'contacts' => $this->whenLoaded('contacts'),
             'banks' => $this->whenLoaded('banks'),
         ];
