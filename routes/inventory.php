@@ -26,4 +26,5 @@ Route::get('requisition/{id}',[RequisitionController::class,'show']);
 Route::get('accepting-stats',[AcceptingStatsController::class,'index']);
 
 Route::get('/', [InventoryController::class,'index']);
+Route::get('/status', [InventoryController::class,'status']);
 Route::patch('triggers/{id}', [TriggersController::class,'update']);

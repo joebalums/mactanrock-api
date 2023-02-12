@@ -18,7 +18,5 @@ class TriggersController extends Controller
 
         return ProductResource::make($services->updateTriggers($id));
 
-
-
     }
 }

@@ -27,6 +27,7 @@ class RequisitionRequest extends FormRequest
         return [
             'project_code' => ['required','string','max:255'],
             'inventory_id' => ['required','array'],
+            'purpose' => ['required','string'],
             'inventory_id.*' => ['required',
                 Rule::exists('inventory_locations','id')/*->where(fn($q) => $q->where('branch_id','!=',$this->user()->branch_id))*/
             ],

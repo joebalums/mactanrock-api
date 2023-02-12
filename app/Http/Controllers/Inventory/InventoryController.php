@@ -17,4 +17,12 @@ class InventoryController
         ]);
         return ProductResource::collection($services->getList());
     }
+
+    public function status(InventoryServices $services)
+    { 
+        return [
+            'low'=> ProductResource::collection($services->getLowStock()),
+            'empty' => ProductResource::collection($services->getEmptyStock())
+        ];
+    }
 }

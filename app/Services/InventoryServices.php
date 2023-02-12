@@ -36,6 +36,29 @@ class InventoryServices
                 fn(Builder $builder) => $builder->orderBy(request('column'),request('direction')))
             ->paginate( request('paginate') ?:12 );
     }
+    /* stock_low_level
+
+reorder_point */
+
+    public function getLowStock()
+    {
+        return InventoryLocation::query()
+        ->join('products','inventory_locations.product_id','=','products.id')
+        ->select(['inventory_locations.*','products.name',
+            'products.code','products.description','products.unit_measurement',
+            'products.unit_value','products.brand','products.category_id',
+            "products.id as productId"])->whereRaw('inventory_locations.quantity <= inventory_locations.stock_low_level')->get();
+    }
+
+    public function getEmptyStock()
+    {
+        return InventoryLocation::query()
+            ->join('products','inventory_locations.product_id','=','products.id')
+            ->select(['inventory_locations.*','products.name',
+                'products.code','products.description','products.unit_measurement',
+                'products.unit_value','products.brand','products.category_id',
+                "products.id as productId"])->where('inventory_locations.quantity', '0')->get(); 
+    }
 
     public function updateTriggers(int $id)
     {
