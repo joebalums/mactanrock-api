@@ -36,9 +36,10 @@ class InventoryServices
                 fn(Builder $builder) => $builder->orderBy(request('column'),request('direction')))
             ->paginate( request('paginate') ?:12 );
     }
-    /* stock_low_level
-
-reorder_point */
+    
+    public function getHistories($id) {
+        return Inventory::query()->with(['receives'])->where('inventory_location_id', $id)->get();
+    }
 
     public function getLowStock()
     {

@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Resources\ProductResource;
-use App\Services\InventoryServices;
+use App\Http\Resources\InventoryResource;
+use App\Services\InventoryServices; 
 use Illuminate\Validation\Rule;
 
 class InventoryController
@@ -16,6 +17,11 @@ class InventoryController
             'direction' => ['nullable', Rule::in(['asc','desc'])]
         ]);
         return ProductResource::collection($services->getList());
+    }
+
+    public function histories($id, InventoryServices $services)
+    {
+        return InventoryResource::collection($services->getHistories($id));
     }
 
     public function status(InventoryServices $services)

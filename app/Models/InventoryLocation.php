@@ -14,5 +14,5 @@ class InventoryLocation extends Model
     public function location()
     {
         return $this->belongsTo(Branch::class,'branch_id');
-    }
+    } 
 }
