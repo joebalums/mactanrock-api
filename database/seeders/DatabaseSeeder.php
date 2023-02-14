@@ -23,10 +23,10 @@ class DatabaseSeeder extends Seeder
             'code' => 'MW-000001',
         ]);
         $admin = User::query()->create([
-             'firstname' => 'MRII',
+             'firstname' => 'Super',
              'lastname' => 'Admin',
              'contact' => '09978011111',
-             'middlename' => 'Main',
+             'middlename' => ' ',
              'user_type' => UserType::ADMIN,
              'email' => 'admin@mrii.com',
              'username' => 'super-admin-mrii',
