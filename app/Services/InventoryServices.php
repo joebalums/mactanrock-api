@@ -121,36 +121,32 @@ class InventoryServices
     }
 
 
-    public function out(int|InventoryLocation $product, int $amount, array $data = [])
+    public function out(int|Product $product, int $amount, array $data = [])
     {
+        
         $inventoryLocation = $this->resolveProduct($product);
-        if($inventoryLocation->total_remaining > 0){
+        if($inventoryLocation->total_quantity > 0){
             $stock = $this->getNonEmptyStock($inventoryLocation->id);
             if(!$stock)
-                return $product;
-
-            if($amount > $stock->amount){
-                $stock->amount->decrement($stock->amount);
-                $amount = $amount - $stock->amount;
-            }else{
-                $stock->amount->decrement($amount);
-                $amount = 0;
-            }
+            
+            $stock->decrement('quantity', $amount);
+            $amount = $amount;
             $this->transaction($stock->id,[
-                'amount' => $amount,
+                'quantity' => $amount,
                 'branch_id' => $inventoryLocation->branch_id,
                 'transacted_by_id' => $data['user_id'],
+                'accepted_by_id' => $data['user_id'],
                 'from_branch_id' => $inventoryLocation->branch_id,
                 'to_branch_id' => $data['branch_id'],
                 'movement' => InventoryMovementType::Out,
                 'action' => $data['action'] ?? InventoryActionType::Auto,
-                'details' => $data['description']
+                'details' => $data['description'] ?? ''
             ]);
-            if($amount > 0){
+           /*  if($amount > 0){
                 $this->out($inventoryLocation,$amount);
-            }
+            } */
         }
-        $product->total_remaining->decrement($amount);
+        $inventoryLocation->decrement('total_quantity', $amount);
 
         return $product;
     }

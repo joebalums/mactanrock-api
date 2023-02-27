@@ -9,9 +9,17 @@ use App\Models\Requisition;
 use App\Models\RequisitionDetail;
 use App\Models\RequisitionItem;
 use Carbon\Carbon;
-
+use Illuminate\Database\Eloquent\Builder;
+use App\Services\InventoryServices;
 class RequisitionServices
 {
+
+    protected $inventoryServices;
+    
+    public function __construct(InventoryServices $inventoryServices)
+    {
+        $this->inventoryServices = $inventoryServices;
+    }
 
     public function get()
     {
@@ -21,11 +29,11 @@ class RequisitionServices
             ->when( request('keyword'),
                 function(Builder $q){
                     $keyword = request('keyword');
-                    return $q->whereRaw("CONCAT_WS(' ',project_code) like '%{$keyword}%' ");
+                    return $q->whereRaw("CONCAT_WS(' ',project_code,account_code,purpose,status,project_name) like '%{$keyword}%' ");
                 })
             ->when( request('type'), fn($q,$type) => $q->where('status', $type))
             ->latest()
-            ->paginate(is_integer(request('paginate',12)) ?request('paginate'):0);
+            ->paginate(request('paginate') ?? 12);
     }
 
     public function requestList()
@@ -39,7 +47,7 @@ class RequisitionServices
             ]])
             ->where('location_id', request()->user()->branch_id)
             ->latest()
-            ->paginate(is_integer(request('paginate',12)) ?request('paginate'):0);
+            ->paginate(request('paginate') ?? 12);
     }
 
     public function showRequest(int $id)
@@ -138,11 +146,28 @@ class RequisitionServices
 
 
     public function approvedRequisition(int $id): void
-    {
+    { 
+        $complete_if_in_array = array('production', 'sale', 'internal_use');
+
         $requisition = Requisition::query()->where('status', RequisitionStatus::Pending)->findOrFail($id);
-        $requisition->status = RequisitionStatus::Approved;
+        $requisition->status = in_array($requisition->purpose, $complete_if_in_array) ? RequisitionStatus::Completed:RequisitionStatus::Approved;
         $requisition->accepted_by_id = request()->user()->id;
         $requisition->date_approved = Carbon::now()->format('Y-m-d H:i:s');
+       
+        if(in_array($requisition->purpose, $complete_if_in_array)){
+            $requisition->load('details');
+            foreach ($requisition->details as $detail){
+            $rd = RequisitionDetail::query()->findOrFail($detail->id);
+                $rd->load('items'); 
+                foreach($rd->items as $item){
+                    $this->inventoryServices->out($item->product_id,$item->request_quantity,[ 
+                        'user_id' =>  request()->user()->id,
+                        'branch_id' => request()->user()->branch_id
+                    ]);
+                }
+            }
+        }
+
         $requisition->save();
     }
 }

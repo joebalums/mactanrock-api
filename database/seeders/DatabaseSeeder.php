@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
              'firstname' => 'Super',
              'lastname' => 'Admin',
              'contact' => '09123456789',
-             'middlename' => ' ',
+             'middlename' => '',
              'user_type' => UserType::ADMIN,
              'email' => 'admin@mrii.com',
              'username' => 'super-admin-mrii',

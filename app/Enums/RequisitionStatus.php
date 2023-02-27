@@ -10,4 +10,5 @@ enum RequisitionStatus: string
     case Accepted = "accepted";
     case Cancelled = "cancelled";
     case Returned = "returned";
+    case Completed = "completed";
 }
