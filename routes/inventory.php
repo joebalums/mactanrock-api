@@ -23,7 +23,17 @@ Route::get('request/{id}',[RequestController::class,'show']);
 Route::post('requisition', [RequisitionController::class,'store']);
 Route::post('requisition-approved/{id}', [ApprovingRequisitionController::class,'update']);
 Route::get('requisition/{id}',[RequisitionController::class,'show']);
+Route::post('requisition-accept/{id}',[RequisitionController::class,'accept']);
 
+Route::post('approve-issuance/{id}', [RequisitionController::class,'approveIssuance']);
+
+Route::get('issuances',[RequisitionController::class,'issuances']);
+Route::get('approval-issuances',[RequisitionController::class,'issuancesForApproval']);
+
+Route::get('get-receiving-issuances',[RequisitionController::class,'receivingIssuances']);
+
+Route::post('issuances/{id}',[RequisitionController::class,'createIssuances']);
+Route::post('issuances-recieved/{id}',[RequisitionController::class,'receivedIssuances']);
 
 Route::get('project-plant-orders',[ProjectPlantOrdersController::class,'index']);
 Route::get('project-plant-orders/{id}',[ProjectPlantOrdersController::class,'show']);

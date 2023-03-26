@@ -193,7 +193,7 @@ class InventoryServices
     }
 
 
-    private function transaction(int $inventory_id, array $data)
+    public function transaction(int $inventory_id, array $data)
     {
         $transaction = new InventoryTransaction();
         $transaction->quantity = $data['quantity'];

@@ -26,6 +26,8 @@ class RequisitionResource extends JsonResource
             'date_needed' => $this->needed_at?->format('M d, Y') ?: "",
             'date_approved' => $this->date_approved?->format('M d, Y') ?: "",
             "status" => $this->status,
+            "remarks" => $this->remarks,
+            "issuance_status" => $this->issuance_status,
             "purpose" => $this->purpose,
             'accepted_by' => UserResource::make($this->whenLoaded('acceptor')),
 
