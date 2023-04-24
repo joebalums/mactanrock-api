@@ -22,6 +22,13 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return UserResource::make($user);
 });
 
+Route::middleware(['guest'])->group(function (){ 
+    Route::prefix('public')->group( function (){
+       require __DIR__.'/public.php';
+    });
+});
+
+
 Route::middleware(['auth:sanctum'])->group(function (){
     require  __DIR__.'/management.php';
 
