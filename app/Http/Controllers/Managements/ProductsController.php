@@ -8,10 +8,8 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\ProductServices;
 
-
 class ProductsController extends Controller
 {
-
     public function index(ProductServices $services)
     {
         return ProductResource::collection($services->get());
@@ -19,11 +17,11 @@ class ProductsController extends Controller
 
     public function store(ProductRequest $request, ProductServices $services)
     {
-       return ProductResource::make($services->create($request));
+        return ProductResource::make($services->create($request));
     }
     public function update(ProductRequest $request, ProductServices $services, int $id)
     {
-        return ProductResource::make($services->update($request,$id));
+        return ProductResource::make($services->update($request, $id));
     }
 
     public function show(int $id)
@@ -31,5 +29,4 @@ class ProductsController extends Controller
         $product = Product::query()->with(['category'])->findOrFail($id);
         return ProductResource::make($product);
     }
-
 }

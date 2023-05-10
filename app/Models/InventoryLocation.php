@@ -15,4 +15,8 @@ class InventoryLocation extends Model
     {
         return $this->belongsTo(Branch::class,'branch_id');
     } 
+    public function inventory()
+    {
+        return $this->hasOne(Inventory::class, 'inventory_location_id');
+    } 
 }

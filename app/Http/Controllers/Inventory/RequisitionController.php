@@ -9,20 +9,20 @@ use App\Services\RequisitionServices;
 
 class RequisitionController extends Controller
 {
-
     public function index(RequisitionServices $services)
     {
         return RequisitionResource::collection($services->get());
     }
     public function store(RequisitionServices $services, RequisitionRequest $request)
     {
-        return RequisitionResource::make($services->create());
+        return $services->create();
+        // return RequisitionResource::make($services->create());
     }
 
-    public function show(RequisitionServices $services,  int $id)
+    public function show(RequisitionServices $services, int $id)
     {
         return RequisitionResource::make($services->show($id));
-    } 
+    }
     public function accept(RequisitionServices $requisitionServices, int $id)
     {
         $requisitionServices->updateStatus($id, 'accepted', '');
@@ -40,21 +40,21 @@ class RequisitionController extends Controller
     {
         return RequisitionResource::collection($services->getReceivingIssuances());
     }
-    
+
     public function issuancesForApproval(RequisitionServices $services)
     {
         return RequisitionResource::collection($services->getIssuancesForApproval());
     }
-    
-    public function createIssuances(RequisitionServices $services,  int $id)
-    { 
-        return $services->saveIssuance($id);
-    } 
 
-    public function receivedIssuances(RequisitionServices $services,  int $id)
-    {  
+    public function createIssuances(RequisitionServices $services, int $id)
+    {
+        return $services->saveIssuance($id);
+    }
+
+    public function receivedIssuances(RequisitionServices $services, int $id)
+    {
         return $services->receivedIssuance($id);
-    } 
+    }
 
     public function approveIssuance(RequisitionServices $requisitionServices, int $id)
     {

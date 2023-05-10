@@ -12,23 +12,21 @@ use Carbon\Carbon;
 
 class ProjectPlantService
 {
-
     public function get()
     {
+        $user = request()->user();
         return Requisition::query()
-            ->with(['requester','acceptor'])
-            ->where('branch_id', request()->user()->branch_id)
+            ->with(['requester','acceptor', 'location'])
+            ->when(
+                $user->branch_id != 1,
+                fn ($q) => $q->where('branch_id', $user->branch_id)
+            )
             ->where('purpose', 'project_plant')
-            ->where('status', 'approved')
-            ->when( request('keyword'),
-                function(Builder $q){
-                    $keyword = request('keyword');
-                    return $q->whereRaw("CONCAT_WS(' ',project_code) like '%{$keyword}%' ");
-                })
+            ->whereIn('status', ['approved', 'completed'])
             ->latest()
             ->paginate(is_integer(request()->get('paginate')) ?? 0);
     }
- 
+
 
     public function show(int $id)
     {

@@ -8,7 +8,6 @@ use App\Services\InventoryServices;
 
 class TriggersController extends Controller
 {
-
     public function update(InventoryServices $services, int $id)
     {
         request()->validate([
@@ -17,6 +16,13 @@ class TriggersController extends Controller
         ]);
 
         return ProductResource::make($services->updateTriggers($id));
+    }
+    public function updatePrice(InventoryServices $services, int $id)
+    {
+        request()->validate([
+            'updatePrice' => ['required','integer','min:0'],
+        ]);
 
+        return ProductResource::make($services->updatePrice($id));
     }
 }

@@ -20,6 +20,8 @@ class RequestItemResource extends JsonResource
             'request_quantity' => $this->request_quantity,
             'full_filled_quantity' => $this->full_filled_quantity,
             'status' => $this->status,
+            'used_qty' => $this->used_qty,
+            'returned_qty' => $this->returned_qty,
         ];
     }
 }

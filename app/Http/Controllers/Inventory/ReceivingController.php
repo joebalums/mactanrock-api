@@ -11,22 +11,23 @@ use App\Services\ReceivingService;
 
 class ReceivingController extends Controller
 {
-
     public function index(ReceivingService $receivingService)
     {
         return ReceiveResource::collection($receivingService->get(request()->user()->branch_id));
     }
+
     public function store(ReceiveRequest $request, InventoryServices $inventoryServices, ReceivingService $receivingService)
     {
         $receive = $receivingService->create($request);
-
-        if($receive->status === ReceivingStatus::Completed){
-            foreach ($receive->details as $detail){
-                $inventoryServices->in($detail->product_id,$detail->quantity,[
+        $user = request()->user();
+        if ($receive->status === ReceivingStatus::Completed) {
+            foreach ($receive->details as $detail) {
+                $inventoryServices->in($detail->product_id, $detail->quantity, [
                     'receive_id' => $receive->id,
                     'expired_at' => $detail->expired_at,
                     'price' => $detail->price,
-                    'user_id' =>  request()->user()->id,
+                    'user_id' =>  $user->id,
+                    'branch_id' => $user->branch_id
                 ]);
             }
         }
