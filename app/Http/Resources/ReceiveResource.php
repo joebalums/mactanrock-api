@@ -16,6 +16,7 @@ class ReceiveResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'reference_invoice_number' => $this->reference_invoice_number ?? "",
             'purchase_order' => $this->purchase_order,
             'status' => $this->status,
             'branch' => BranchResource::make($this->whenLoaded('branch')),

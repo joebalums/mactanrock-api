@@ -28,6 +28,7 @@ class ReceiveRequest extends FormRequest
     {
         return [
             'purchase_order' => ['required','string','max:255', Rule::unique('receives','purchase_order')],
+            'reference_invoice_number' => ['nullable','string','max:255'],
             'supplier_id' => ['nullable', Rule::exists('suppliers','id')],
             'project_name' => ['required','string','max:255'],
             'status' => ['nullable', new Enum(ReceivingStatus::class)],
