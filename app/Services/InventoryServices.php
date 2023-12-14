@@ -10,11 +10,14 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\InventoryLocation;
 use Illuminate\Database\Eloquent\Builder;
+use App\Events\RequestOrderEvents;
 
 class InventoryServices
 {
     public function getList()
     {
+        event(new RequestOrderEvents('test inventory'));
+
         return InventoryLocation::query()
             ->with(['location'])
             ->join('products', 'inventory_locations.product_id', '=', 'products.id')
@@ -30,7 +33,7 @@ class InventoryServices
             )
             ->when(
                 request('purpose') == 'production',
-                fn (Builder $builder) => $builder->whereIn('branch_id', [1, 2])
+                fn (Builder $builder) => $builder->whereIn('branch_id', [1])
             )
             ->when(
                 request('purpose') != 'production' && request('purpose') != 'internal_use',
@@ -55,7 +58,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(is_integer(request()->get('paginate')) ? request()->get('paginate') : 15);
+            ->paginate(request()->get('paginate', 10));
     }
     public function getItemCosting()
     {

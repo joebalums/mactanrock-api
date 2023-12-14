@@ -151,6 +151,7 @@ class RequisitionServices
             $requisition->account_code = request()->get('account_code');
             $requisition->purpose = request()->get('purpose');
             $requisition->branch_id = $user->branch_id;
+            $requisition->request_from_branch_id = request()->get('branch_id');
             $requisition->needed_at = request()->get('date_needed');
             $requisition->user_id = $user->id;
             $requisition->save();
@@ -210,7 +211,49 @@ class RequisitionServices
 
         return $requisition;
     }
+    public function getPendingRequest()
+    {
+        return Requisition::query()
+            ->where('status', 'pending')
+            ->where('branch_id', request()->user()->branch_id)
+            ->latest()
+            ->count();
+    }
 
+    public function getPendingRequestAcceptance()
+    {
+        return Requisition::query()
+            ->where('status', 'approved')
+            // ->where('branch_id', request()->user()->branch_id)
+            ->latest()
+            ->count();
+    }
+
+    public function getPendingForIssuance()
+    {
+        return Requisition::query()
+            ->where('issuance_status', 'pending')
+            ->where('status', 'accepted')
+            ->latest()
+            ->count();
+    }
+    public function getPendingReceivingOrders()
+    {
+        return Requisition::query()
+            ->where('issuance_status', 'completed')
+            ->where('status', 'accepted')
+            ->where('branch_id', request()->user()->branch_id)
+            ->latest()
+            ->count();
+    }
+    public function getPendingForApproval()
+    {
+        return Requisition::query()
+            ->where('status', 'pending')
+            ->where('branch_id', request()->user()->branch_id)
+            ->latest()
+            ->count();
+    }
 
     public function approvedRequisition(int $id)
     {

@@ -62,4 +62,24 @@ class RequisitionController extends Controller
 
         return response()->noContent();
     }
+
+    public function getNotifications(RequisitionServices $services)
+    {
+        $pendingRequestOrder = $services->getPendingRequest();
+        $pendingForApproval = $services->getPendingForApproval();
+        $pendingRequestAcceptance = $services->getPendingRequestAcceptance();
+        $pendingForIssuance = $services->getPendingForIssuance();
+        $pendingForReceivingOrder = $services->getPendingReceivingOrders();
+
+        $total_requests = $pendingRequestOrder + $pendingForApproval + $pendingRequestAcceptance;
+
+        return response()->json([
+            'pending_for_requests' => $pendingRequestOrder,
+            'pending_for_approval' => $pendingForApproval,
+            'pending_for_acceptance' => $pendingRequestAcceptance,
+            'total_requests' => $total_requests,
+            'pending_for_issuance' => $pendingForIssuance,
+            'pending_for_receiving' => $pendingForReceivingOrder,
+        ], 200);
+    }
 }

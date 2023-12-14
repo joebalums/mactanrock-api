@@ -6,6 +6,7 @@ use App\Enums\ReceivingStatus;
 use App\Models\Receive;
 use App\Models\ReceiveDetail;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReceivingService
 {
@@ -13,15 +14,28 @@ class ReceivingService
     public function get(?int $branch_id = null)
     {
         return Receive::query()->with([
-                'details' => [
-                    'product'
-                ],
-                'supplier'
-            ])
-            ->when(!is_null($branch_id), fn($q) => $q->where('branch_id', $branch_id))
+            'details' => [
+                'product'
+            ],
+            'supplier'
+        ])
+
+            ->when(
+                request('keyword'),
+                function (Builder $q) {
+                    $keyword = request('keyword');
+                    return $q->whereRaw("CONCAT_WS(' ',purchase_order,project_name,status,account_code) like '%{$keyword}%' ");
+                }
+            )
+            ->when(
+                request('date'),
+                function (Builder $q) {
+                    return $q->where('date_receive', request('date'));
+                }
+            )
+            ->when(!is_null($branch_id), fn ($q) => $q->where('branch_id', $branch_id))
             ->latest()
             ->paginate(is_integer(request()->get('paginate')) ?? 1000000);
-          
     }
     public function create(Request $request)
     {
@@ -31,13 +45,13 @@ class ReceivingService
         $receiving->project_name = $request->get('project_name');
         $receiving->branch_id = $request->get('branch_id', request()->user()->branch_id);
         $receiving->date_receive = $request->get('date_receive');
-        $receiving->status = $request->get('status',ReceivingStatus::Pending);
+        $receiving->status = $request->get('status', ReceivingStatus::Pending);
         $receiving->save();
 
-        $details = request()->get('products',[]);
+        $details = request()->get('products', []);
         $items = [];
 
-        foreach ($details as $key => $product){
+        foreach ($details as $key => $product) {
             $items[] = [
                 'product_id' => $product,
                 'receive_id' => $receiving->id,
@@ -72,5 +86,4 @@ class ReceivingService
             ]
         ])->findOrFail($id);
     }
-
 }

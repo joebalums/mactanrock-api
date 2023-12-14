@@ -14,9 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::table('requisitions', function (Blueprint $table) {
-
-            $table->string('issuance_status')->default('')->nullable();
-            $table->string('remarks')->default('')->nullable();
+            //
+            $table->foreignId('request_from_branch_id')->nullable();
         });
     }
 
@@ -28,8 +27,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('requisitions', function (Blueprint $table) {
-            $table->dropColumn(['issuance_status', 'remarks']);
             //
+            $table->dropColumn(['request_from_branch_id']);
         });
     }
 };
