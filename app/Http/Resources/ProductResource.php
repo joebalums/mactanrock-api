@@ -25,10 +25,10 @@ class ProductResource extends JsonResource
             'description' =>  $this->description,
             'unit_value' => $this->unit_value,
             'unit_measurement' => $this->unit_measurement,
-            'uom' => "{$this->unit_value}{$this->unit_measurement}",
+            'uom' => "{$this->unit_measurement}",
             'category_id' => $this->category_id,
             'category' => CategoryResource::make($this->whenLoaded('category')),
-            $this->mergeWhen(!is_null($this->total_quantity), fn() => [
+            $this->mergeWhen(!is_null($this->total_quantity), fn () => [
                 'location' => BranchResource::make($this->whenLoaded('location')),
                 'total_quantity' => $this->total_quantity,
                 'quantity' => $this->quantity,
@@ -38,7 +38,7 @@ class ProductResource extends JsonResource
                 'reorder_point' => $this->reorder_point ?: 0,
                 'business_unit' => getUnit($this->business_unit),
                 'unit_code' => $this->business_unit ?? "",
-                'stocks' => $this->quantity ? ($this->quantity <= $this->reorder_point ? "reorder" : ($this->quantity <= $this->stock_low_level ? "low" : "")):"out",
+                'stocks' => $this->quantity ? ($this->quantity <= $this->reorder_point ? "reorder" : ($this->quantity <= $this->stock_low_level ? "low" : "")) : "out",
             ])
         ];
     }

@@ -19,10 +19,11 @@ class ProductServices
         return Product::query()
             ->with(['category'])
             ->when(
-                request('keyword'),
+                request()->get('keyword'),
                 function (Builder $q) {
-                    $keyword = request('keyword');
-                    return $q->whereRaw("CONCAT_WS(' ',name,code,brand) like '%{$keyword}%' ");
+                    $keyword = request()->get('keyword');
+                    return $q->where('name', 'LIKE', '%' . $keyword . '%')->orWhere('description', 'LIKE', '%' . $keyword . '%')->orWhere('code', 'LIKE', '%' . $keyword . '%')->orWhere('brand', 'LIKE', '%' . $keyword . '%');
+                    // return $q->whereRaw("CONCAT_WS(' ',name,code,brand) LIKE '%{$keyword}%'");
                 }
             )
             ->when(
