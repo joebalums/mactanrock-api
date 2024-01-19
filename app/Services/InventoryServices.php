@@ -304,7 +304,7 @@ class InventoryServices
 
 
 
-    private function resolveProduct(int|Product $product, int $branch_id): \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Builder|Product|int|array|null
+    public function resolveProduct(int|Product $product, int $branch_id): \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Builder|Product|int|array|null
     {
         if (!($product instanceof  Product)) {
             $product = Product::query()->findOrFail($product);

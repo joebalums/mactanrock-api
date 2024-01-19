@@ -11,8 +11,8 @@ class TriggersController extends Controller
     public function update(InventoryServices $services, int $id)
     {
         request()->validate([
-            'stock_low_level' => ['required','integer','min:0'],
-            'reorder_point'=> ['required','integer','min:0'],
+            'stock_low_level' => ['required', 'integer', 'min:0'],
+            'reorder_point' => ['required', 'integer', 'min:0'],
         ]);
 
         return ProductResource::make($services->updateTriggers($id));
@@ -20,7 +20,7 @@ class TriggersController extends Controller
     public function updatePrice(InventoryServices $services, int $id)
     {
         request()->validate([
-            'updatePrice' => ['required','integer','min:0'],
+            'price' => ['required', 'min:0'],
         ]);
 
         return ProductResource::make($services->updatePrice($id));

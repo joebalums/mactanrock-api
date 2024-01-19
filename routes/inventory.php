@@ -50,6 +50,7 @@ Route::patch('triggers/{id}', [TriggersController::class, 'update']);
 Route::patch('price/{id}', [TriggersController::class, 'updatePrice']);
 
 Route::post('/repack', [InventoryController::class, 'repackItem']);
+Route::patch('/beginning-balance/{id}', [InventoryController::class, 'updateBeginningBalance']);
 
 Route::get('/item-costing', [InventoryController::class, 'itemCosting']);
 Route::get('/warehouse-issuances', [InventoryController::class, 'warehouseIssuances']);

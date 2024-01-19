@@ -31,15 +31,19 @@ class ProductServices
                 fn ($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
             )
             ->latest()
-            ->paginate(request('paginate') ? request('paginate') : 10);
+            ->paginate(request('paginate') ? request('paginate') == 'all' ? -1 : request('paginate') : 10);
     }
     public function create(Request $request)
     {
+        $inventoryService = new InventoryServices();
+        $user = request()->user();
         $product = new Product();
         $this->itemInformation($request, $product);
         $product->save();
         $product->load('category');
 
+        $inventoryLocation = $inventoryService->resolveProduct($product->id, $user->branch_id);
+        $stock = $inventoryService->resolveStockInventory($inventoryLocation);
         return $product;
     }
 

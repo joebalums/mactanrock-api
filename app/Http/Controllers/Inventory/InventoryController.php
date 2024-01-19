@@ -85,7 +85,27 @@ class InventoryController
             'empty' => ProductResource::collection($services->getEmptyStock())
         ];
     }
+    public function updateBeginningBalance(InventoryServices $inventory_services, $id)
+    {
+        try {
+            DB::beginTransaction();
+            $user = request()->user();
+            $data = [
+                'transacted_by_id' => $user->id,
+                'accepted_by_id' => $user->id,
+                'from_branch_id' => $user->branch_id,
+                'to_branch_id' => $user->branch_id,
+                'description' => 'updated beginning balance'
+            ];
+            $stock_in = $inventory_services->stockIn(request('product_id'), request('qty'), $data);
 
+            DB::commit();
+            return response(['stock_in' => $stock_in]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
+        }
+    }
     public function repackItem(InventoryServices $inventory_services)
     {
         try {
@@ -112,7 +132,7 @@ class InventoryController
 
     public function dashboardData(InventoryServices $inventoryServices)
     {
-        $inventoryServices->populateInventories();
+        // $inventoryServices->populateInventories();
         $user = request()->user();
         $rc_exclude_purpose = ['production', 'project_plant', 'stocking', 'for_purchase'];
 
