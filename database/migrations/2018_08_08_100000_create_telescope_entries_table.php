@@ -41,7 +41,7 @@ return new class extends Migration
     public function up()
     {
         $this->schema->create('telescope_entries', function (Blueprint $table) {
-            $table->id();
+           
             $table->bigIncrements('sequence');
             $table->uuid('uuid');
             $table->uuid('batch_id');
@@ -72,6 +72,7 @@ return new class extends Migration
         });
 
         $this->schema->create('telescope_monitoring', function (Blueprint $table) {
+             $table->id();
             $table->string('tag');
         });
     }
