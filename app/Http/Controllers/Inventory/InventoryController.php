@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\InventoryResource;
+use App\Http\Resources\InventoryTransactionResource;
+use App\Http\Resources\ProductLocationResource;
 use App\Models\InventoryTransaction;
 use App\Models\InventoryLocation;
 use App\Models\Inventory;
@@ -31,7 +33,11 @@ class InventoryController
             'column' => ['nullable', Rule::in(['name', 'description', 'quantity', 'code', 'brand'])],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
-        return ProductResource::collection($services->getItemCosting());
+        $items = $services->getItemCosting();
+        return ProductLocationResource::collection($items->load([
+            'product', 'product.category', 'branch', 'location', 'inventory'
+        ]));
+        // return ProductResource::collection($items);
     }
 
     public function warehouseIssuances(InventoryServices $services)
@@ -41,7 +47,18 @@ class InventoryController
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
 
-        $histories = InventoryTransaction::query()->with('inventory', 'inventory.product', 'inventory.location')->where('movement', 'out')->get();
+        $histories = InventoryTransaction::query()
+            ->with('inventory', 'inventory.product', 'inventory.location')
+            ->where('movement', 'out')
+            ->when(
+                request('date_from') && request('date_to'),
+                function (Builder $q) {
+                    $date_from = request('date_from');
+                    $date_to = request('date_to');
+                    return $q->whereBetween('created_at', [$date_from . ' 00:00:00', $date_to . ' 23:59:59']);
+                }
+            )
+            ->get();
         return response(['data' => $histories, 'histories' => $histories]);
         // return ProductResource::collection($services->getItemCosting());
     }
@@ -69,15 +86,25 @@ class InventoryController
 
     public function histories($id, InventoryServices $services)
     {
-        $inventory = Inventory::query()->where('inventory_location_id', $id)->first();
-        $histories = InventoryTransaction::query()
-            ->with(['receive', 'request'])
-            ->where('inventory_id', $inventory->id)->get();
-        return response(['data' => $histories]);
+        $inventoryIDS = Inventory::query()->where('inventory_location_id', $id)->pluck('id');
+        $histories = InventoryTransaction::query()->whereIn('inventory_id', $inventoryIDS)->get();
+        return response([
+            'data' => InventoryTransactionResource::collection($histories->load(
+                ['receive', 'request', 'inventory']
+            )),
+            'inventory' => $inventoryIDS
+        ]);
         // return  $inventory;//
         // return InventoryResource::collection($services->getHistories($id));
     }
-
+    public function getLowStocks(InventoryServices $services)
+    {
+        return ProductResource::collection($services->getLowStock());
+    }
+    public function getEmptyStocks(InventoryServices $services)
+    {
+        return ProductResource::collection($services->getEmptyStock());
+    }
     public function status(InventoryServices $services)
     {
         return [
@@ -186,4 +213,39 @@ class InventoryController
             ->get();
         return response(['request_received' => $requests_received, 'requests_accepted' => $requests_accepted, 'materials_received' => $materials_received, 'materials_issued' => $materials_issued, 'materials_returned' => $materials_returned, 'fast_moving_items' => $fast_moving_items, 'levels_per_product' => $levels_per_product, 'levels_per_branch' => $levels_per_branch, $user->branch_id]);
     }
+
+    public function getFastMovingItems()
+    {
+        $user = request()->user();
+        $fast_moving_items = InventoryTransaction::select('inventory_id', DB::raw('count(*) as total'))
+            ->with('inventory', 'inventory.product', 'inventory.location')
+            ->where('branch_id', $user->branch_id)
+            ->groupBy('inventory_id')
+            ->when(
+                request()->get('column') && request()->get('direction'),
+                fn ($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
+            )
+
+            ->paginate(request('paginate', 10) ? (request('paginate') == 'all' ?  -1 : 10) : 10);
+
+        return InventoryTransactionResource::collection($fast_moving_items);
+    }
+
+    // public function getFastMovingItems()
+    // {
+    //     $user = request()->user();
+
+    //     $levels_per_product = InventoryLocation::query()
+    //         ->with('inventory', 'inventory.product')
+    //         ->orderBy('updated_at', 'desc')
+    //         ->where('branch_id', $user->branch_id) 
+    //         ->when(
+    //             request()->get('column') && request()->get('direction'),
+    //             fn ($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
+    //         )
+
+    //         ->paginate(request('paginate', 10) ? (request('paginate') == 'all' ?  -1 : 10) : 10);
+
+    //     return InventoryTransactionResource::collection($levels_per_product);
+    // }
 }

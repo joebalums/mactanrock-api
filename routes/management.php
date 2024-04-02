@@ -19,6 +19,8 @@ Route::prefix('management')->group(function () {
     Route::apiResource('suppliers', SupplierController::class)->parameters(['suppliers' => 'id']);
     Route::apiResource('products', ProductsController::class);
     Route::post('import-products', [ProductsController::class, 'import']);
+    Route::post('import-suppliers', [SupplierController::class, 'import']);
+
     Route::patch('user-password/{id}', [UserPasswordController::class, 'update']);
     Route::patch('password', [PasswordController::class, 'update']);
 });

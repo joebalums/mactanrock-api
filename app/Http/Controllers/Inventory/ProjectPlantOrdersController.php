@@ -25,11 +25,11 @@ class ProjectPlantOrdersController extends Controller
             DB::beginTransaction();
             $user = request()->user();
             $data = [
-                'transacted_by_id'=>$user->id,
-                'accepted_by_id'=>$user->id,
-                'from_branch_id'=>$user->branch_id,
-                'to_branch_id'=>$user->branch_id,
-                'description'=> 'used/consumed items'
+                'transacted_by_id' => $user->id,
+                'accepted_by_id' => $user->id,
+                'from_branch_id' => $user->branch_id,
+                'to_branch_id' => $user->branch_id,
+                'description' => 'used/consumed items'
             ];
 
             $product_ids = request()->get('product_id');
@@ -49,7 +49,7 @@ class ProjectPlantOrdersController extends Controller
             }
 
             DB::commit();
-            return response(['$product_ids'=>$product_ids, 'stock_outs'=> $stock_outs, 'items'=> $rq_items], 200);
+            return response(['$product_ids' => $product_ids, 'stock_outs' => $stock_outs, 'items' => $rq_items], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
@@ -72,6 +72,8 @@ class ProjectPlantOrdersController extends Controller
                 'transacted_by_id' => $user->id,
                 'accepted_by_id' => $user->id,
                 'from_branch_id' => $user->branch_id,
+                'returned_by_user_id' => $user->id,
+                'returned_by_branch_id' => $user->branch_id,
                 'to_branch_id' => 1,
                 'description' => 'materials returned by warehouse'
             ];
@@ -95,7 +97,7 @@ class ProjectPlantOrdersController extends Controller
             }
 
             DB::commit();
-            return response(['stock_outs'=> $stock_outs,'stock_ins'=> $stock_ins, 'items'=> $rq_items], 200);
+            return response(['stock_outs' => $stock_outs, 'stock_ins' => $stock_ins, 'items' => $rq_items], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);

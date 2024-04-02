@@ -64,19 +64,26 @@ class InventoryServices
     {
         $user = request()->user();
         return InventoryLocation::query()
-            ->with(['location'])
+            // ->with(['location'])
             ->join('products', 'inventory_locations.product_id', '=', 'products.id')
-            ->select([
-                'inventory_locations.*', 'products.name', 'products.account_code',
-                'products.code', 'products.description', 'products.unit_measurement',
-                'products.unit_value', 'products.brand', 'products.category_id', 'price',
-                "products.id as productId"
-            ])
+            // ->select([
+            //     'inventory_locations.*', 'products.name', 'products.account_code',
+            //     'products.code', 'products.description', 'products.unit_measurement',
+            //     'products.unit_value', 'products.brand', 'products.category_id', 'price',
+            //     "products.id as productId"
+            // ])
             ->when(
                 request('keyword'),
                 function (Builder $q) {
                     $keyword = request('keyword');
                     return $q->whereRaw("CONCAT_WS(' ',name,code,brand) like '%{$keyword}%' ");
+                }
+            )
+            ->when(
+                request('category_id'),
+                function (Builder $q) {
+                    $category_id = request('category_id');
+                    return $q->where('products.category_id', $category_id);
                 }
             )
             ->where('branch_id', $user->branch_id)
@@ -135,7 +142,12 @@ class InventoryServices
                 'products.code', 'products.description', 'products.unit_measurement',
                 'products.unit_value', 'products.brand', 'products.category_id',
                 "products.id as productId"
-            ])->whereRaw('inventory_locations.quantity <= inventory_locations.stock_low_level')->get();
+            ])->whereRaw('inventory_locations.quantity <= inventory_locations.stock_low_level')
+            ->when(
+                request('column') && request('direction'),
+                fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
+            )
+            ->paginate(request()->get('paginate', 10));
     }
 
     public function getEmptyStock()
@@ -147,7 +159,12 @@ class InventoryServices
                 'products.code', 'products.description', 'products.unit_measurement',
                 'products.unit_value', 'products.brand', 'products.category_id',
                 "products.id as productId"
-            ])->where('inventory_locations.quantity', '0')->get();
+            ])->where('inventory_locations.quantity', '0')
+            ->when(
+                request('column') && request('direction'),
+                fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
+            )
+            ->paginate(request()->get('paginate', 10));
     }
 
     public function updateTriggers(int $id)
@@ -286,6 +303,8 @@ class InventoryServices
         $transaction = new InventoryTransaction();
         $transaction->quantity = $data['quantity'];
         $transaction->branch_id = $data['branch_id'];
+        $transaction->returned_by_user_id = $data['returned_by_user_id'];
+        $transaction->returned_by_branch_id = $data['returned_by_branch_id'];
         $transaction->transacted_by_id = $data['transacted_by_id'];
         $transaction->accepted_by_id = $data['accepted_by_id'];
         $transaction->to_branch_id = $data['to_branch_id'] ?? null;
