@@ -109,7 +109,8 @@ class InventoryController
     {
         return [
             'low' => ProductResource::collection($services->getLowStock()),
-            'empty' => ProductResource::collection($services->getEmptyStock())
+            'empty' => ProductResource::collection($services->getEmptyStock()),
+            'pending' => $services->countItemWithNoInventoryRecords()
         ];
     }
     public function updateBeginningBalance(InventoryServices $inventory_services, $id)
@@ -155,9 +156,12 @@ class InventoryController
             return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
         }
     }
+    public function populateInventory(InventoryServices $inventoryServices)
+    {
+        $inventoryServices->populateInventories();
+    }
 
-
-    public function dashboardData(InventoryServices $inventoryServices)
+    public function dashboardData()
     {
         // $inventoryServices->populateInventories();
         $user = request()->user();

@@ -398,15 +398,23 @@ class InventoryServices
         }
     }
 
+    public function countItemWithNoInventoryRecords()
+    {
+
+        $product_ids_1 = Product::query()->get()->pluck('id');
+        $user = request()->user();
+        $product_ids = InventoryLocation::query()->where('branch_id', $user->branch_id)->pluck('product_id');
+        // return ['products' => $products, 'product_ids' => $product_ids];
+        return array_diff(array($product_ids_1), array($product_ids));
+    }
+
     public function populateInventories()
     {
         $products = Product::query()->get();
         $user = request()->user();
         foreach ($products as $product) {
-
             $inventoryLocation = $this->resolveProduct($product->id, $user->branch_id);
-
-            $stock = $this->resolveStockInventory($inventoryLocation);
+            $this->resolveStockInventory($inventoryLocation);
         }
     }
 }
