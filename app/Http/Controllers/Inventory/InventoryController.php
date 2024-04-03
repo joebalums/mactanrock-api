@@ -230,7 +230,7 @@ class InventoryController
                 fn ($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
             )
 
-            ->paginate(request('paginate', 10) ? (request('paginate') == 'all' ?  -1 : 10) : 10);
+            ->paginate(request('paginate') ? (request('paginate') == 'all' ?  -1 : request('paginate')) : 10);
 
         return InventoryTransactionResource::collection($fast_moving_items);
     }

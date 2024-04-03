@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 
 class ProductServices
 {
+
     public function get()
     {
         request()->validate([
@@ -31,8 +32,9 @@ class ProductServices
                 fn ($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
             )
             ->latest()
-            ->paginate(request('paginate', 10) ? (request('paginate') == 'all' ?  -1 : 10) : 10);
+            ->paginate(request('paginate') ? (request('paginate') == 'all' ?  -1 : request('paginate')) : 10);
     }
+
     public function create(Request $request)
     {
         $inventoryService = new InventoryServices();
