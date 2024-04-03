@@ -35,6 +35,7 @@ class ImportProducts implements ToCollection, WithHeadingRow, WithUpserts, WithU
                         $product = Product::updateOrCreate([
                             'code' => $row['item_id'] ?? $row['description'] ?? ' ',
                             'name' => $row['description'] ?? $row['item_id'] ?? ' ',
+                            'brand' => $row['brand'] ?? $row['brand'] ?? ' ',
                             'description' => $row['description'] ?? $row['item_id'] ?? ' ',
                         ], [
                             'category_id' => $this->category_id,
@@ -52,10 +53,10 @@ class ImportProducts implements ToCollection, WithHeadingRow, WithUpserts, WithU
     }
     public function upsertColumns()
     {
-        return ['item_id', 'description'];
+        return ['item_id', 'description', 'unit_measurement', 'brand'];
     }
     public function uniqueBy()
     {
-        return ['item_id', 'description'];
+        return ['item_id', 'description', 'unit_measurement', 'brand'];
     }
 }
