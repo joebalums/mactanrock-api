@@ -38,7 +38,7 @@ class ImportProducts implements ToCollection, WithHeadingRow, WithUpserts, WithU
                             'description' => $row['description'] ?? $row['item_id'] ?? ' ',
                         ], [
                             'category_id' => $this->category_id,
-                            'unit_measurement' => $row['uom'] ?? ' ',
+                            'unit_measurement' => $row['uom'] ??  $row['unit_measurement'] ?? ' ',
                             'unit_value' => 1,
                         ]);
 
