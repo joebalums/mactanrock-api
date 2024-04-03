@@ -58,7 +58,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(request()->get('paginate', 10));
+            ->paginate(request('paginate', 10));
     }
     public function getItemCosting()
     {
@@ -91,7 +91,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(is_integer(request()->get('paginate')) ?? 0);
+            ->paginate(is_integer(request('paginate')) ?? 0);
     }
 
     public function getBranchInventory()
@@ -124,7 +124,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(request('paginate') ?: 12);
+            ->paginate(request('paginate', 10));
     }
 
 
@@ -147,7 +147,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(request()->get('paginate', 10));
+            ->paginate(request('paginate', 10));
     }
 
     public function getEmptyStock()
@@ -164,7 +164,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(request()->get('paginate', 10));
+            ->paginate(request('paginate', 10));
     }
 
     public function updateTriggers(int $id)
