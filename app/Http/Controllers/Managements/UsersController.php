@@ -19,23 +19,23 @@ class UsersController extends Controller
     public function store(UserRequest $request, UserServices $userServices)
     {
         $data = $request->validated();
-        if($request->hasFile('avatar')){
+        if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')->store('avatars');
         }
 
-        $user = $userServices->create($data,$request->get('type'));
+        $user = $userServices->create($data, $request->get('type'));
 
         return UserResource::make($user);
     }
 
-    public function update(UserRequest $request , UserServices $userServices,  int $id)
+    public function update(UserRequest $request, UserServices $userServices,  int $id)
     {
         $data = $request->validated();
-        if($request->hasFile('avatar')){
+        if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')->store('avatars');
         }
 
-        $user = $userServices->update($data,$id);
+        $user = $userServices->update($data, $id);
 
         return UserResource::make($user);
     }

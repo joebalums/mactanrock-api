@@ -29,7 +29,7 @@ class ProductResource extends JsonResource
             'uom' => "{$this->unit_measurement}",
             'category_id' => $this->category_id,
             'transactions' => $this->whenLoaded('transactions'),
-            'transactions_count' => $this->transactions->count(),
+            'transactions_count' => $this->transactions ? $this->transactions->count() : 0,
             'category' => CategoryResource::make($this->whenLoaded('category')),
             $this->mergeWhen(!is_null($this->total_quantity), fn () => [
                 'location' => BranchResource::make($this->whenLoaded('location')),

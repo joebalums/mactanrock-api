@@ -5,10 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Panoscape\History\HasHistories;
 
 class InventoryTransaction extends Model
 {
     use HasFactory;
+    use HasHistories;
+
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
 
     public function inventory(): BelongsTo
     {

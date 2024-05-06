@@ -6,10 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Panoscape\History\HasHistories;
 
 class Inventory extends Model
 {
     use HasFactory;
+    use HasHistories;
+
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
 
     protected $fillable = [
         'inventory_location_id',

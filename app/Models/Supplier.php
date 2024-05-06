@@ -4,10 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Panoscape\History\HasHistories;
 
 class Supplier extends Model
 {
     use HasFactory;
+    use HasHistories;
+
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
 
     protected $guarded = [];
 
@@ -20,6 +27,5 @@ class Supplier extends Model
     public function contacts()
     {
         return $this->hasMany(SupplierContact::class);
-
     }
 }

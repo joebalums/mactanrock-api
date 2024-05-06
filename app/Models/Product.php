@@ -7,10 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\InventoryLocation;
 
+use Panoscape\History\HasHistories;
+
 class Product extends Model
 {
     use HasFactory;
+    use HasHistories;
 
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
     protected $fillable = [
         'name',
         'code',

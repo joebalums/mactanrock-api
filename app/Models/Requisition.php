@@ -4,10 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Panoscape\History\HasHistories;
 
 class Requisition extends Model
 {
     use HasFactory;
+    use HasHistories;
+
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
 
     protected $dates = ['needed_at', 'date_approved'];
 
@@ -19,7 +26,7 @@ class Requisition extends Model
 
     public function requester(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(User::class,'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function acceptor()
@@ -29,6 +36,6 @@ class Requisition extends Model
 
     public function location()
     {
-        return $this->belongsTo(Branch::class , 'branch_id');
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 }

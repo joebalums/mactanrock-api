@@ -4,11 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Panoscape\History\HasHistories;
 
 class Issuance extends Model
 {
     use HasFactory;
-    
+    use HasHistories;
+
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
+
     public function details(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(IssuanceDetail::class);
@@ -16,7 +23,7 @@ class Issuance extends Model
 
     public function requester(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(User::class,'user_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function acceptor()
@@ -26,7 +33,6 @@ class Issuance extends Model
 
     public function location()
     {
-        return $this->belongsTo(Branch::class , 'branch_id');
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
-
 }
