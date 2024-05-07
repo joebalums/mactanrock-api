@@ -15,9 +15,9 @@ return [
 
     'created' => 'Created :model :label',
 
-    'updating' => 'Updating :model :label',
+    'updating' => 'Updated :model :label',
 
-    'deleting' => 'Deleting :model :label',
+    'deleting' => 'Deleted :model :label',
 
     'restored' => 'Restored :model :label',
 

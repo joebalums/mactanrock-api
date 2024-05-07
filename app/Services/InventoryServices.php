@@ -147,8 +147,7 @@ class InventoryServices
             ->when(
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
-            )
-            ->paginate(request('paginate', 10));
+            )->get();
     }
 
     public function getEmptyStock()
@@ -165,7 +164,7 @@ class InventoryServices
                 request('column') && request('direction'),
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
-            ->paginate(request('paginate', 10));
+            ->get();
     }
 
     public function updateTriggers(int $id)

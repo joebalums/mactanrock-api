@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Managements;
 use App\Enums\UserType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Management\UserRequest;
+use App\Http\Resources\HistoryLogResource;
 use App\Http\Resources\UserResource;
+use App\Models\HistoryLogs;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\UserServices;
 
@@ -14,6 +17,13 @@ class UsersController extends Controller
     public function index(UserServices $userServices)
     {
         return UserResource::collection($userServices->getUsers());
+    }
+
+    public function getModelHistory()
+    {
+        $model_type = 'App\Models\\' . ucfirst(request('entity'));
+        $logs = HistoryLogs::query()->where('model_type', $model_type)->orderBy('performed_at', 'desc')->paginate(request('paginate', 10));
+        return HistoryLogResource::collection($logs);
     }
 
     public function store(UserRequest $request, UserServices $userServices)

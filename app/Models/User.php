@@ -8,9 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Panoscape\History\HasOperations;
+use Panoscape\History\HasHistories;
+
 
 class User extends Authenticatable
 {
+    use HasHistories;
     use HasApiTokens, HasFactory, Notifiable, HasOperations;
 
     /**
@@ -43,6 +46,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function getModelLabel()
+    {
+        return $this->display_name;
+    }
 
     /**
      * The channels the user receives notification broadcasts on.

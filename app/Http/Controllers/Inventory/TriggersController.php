@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InventoryLocationResource;
 use App\Http\Resources\ProductResource;
 use App\Services\InventoryServices;
 
@@ -15,7 +16,7 @@ class TriggersController extends Controller
             'reorder_point' => ['required', 'integer', 'min:0'],
         ]);
 
-        return ProductResource::make($services->updateTriggers($id));
+        return InventoryLocationResource::make($services->updateTriggers($id));
     }
     public function updatePrice(InventoryServices $services, int $id)
     {
@@ -23,6 +24,6 @@ class TriggersController extends Controller
             'price' => ['required', 'min:0'],
         ]);
 
-        return ProductResource::make($services->updatePrice($id));
+        return InventoryLocationResource::make($services->updatePrice($id));
     }
 }

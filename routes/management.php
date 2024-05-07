@@ -20,6 +20,7 @@ Route::prefix('management')->group(function () {
     Route::apiResource('products', ProductsController::class);
     Route::post('import-products', [ProductsController::class, 'import']);
     Route::post('import-suppliers', [SupplierController::class, 'import']);
+    Route::get('get-model-history', [UsersController::class, 'getModelHistory']);
 
     Route::patch('user-password/{id}', [UserPasswordController::class, 'update']);
     Route::patch('password', [PasswordController::class, 'update']);
