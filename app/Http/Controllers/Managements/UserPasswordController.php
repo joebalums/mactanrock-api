@@ -12,12 +12,12 @@ class UserPasswordController extends Controller
     public function update(UserServices $userServices, int $id)
     {
         request()->validate([
-            'old_password' => ['required','string'],
+            'old_password' => ['required', 'string'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = request()->user();
-        $userServices->changePassword(request()->password,$user);
+        $userServices->changePassword(request()->old_password, $user);
 
         return response()->noContent();
     }
