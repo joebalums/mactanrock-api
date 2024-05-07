@@ -21,8 +21,12 @@ class UsersController extends Controller
 
     public function getModelHistory()
     {
-        $model_type = 'App\Models\\' . ucfirst(request('entity'));
-        $logs = HistoryLogs::query()->where('model_type', $model_type)->orderBy('performed_at', 'desc')->paginate(request('paginate', 10));
+        if (auth()->user()->user_type == 'admin' && !request('entity')) {
+            $logs = HistoryLogs::query()->orderBy('performed_at', 'desc')->paginate(request('paginate', 10));
+        } else {
+            $model_type = 'App\Models\\' . ucfirst(request('entity'));
+            $logs = HistoryLogs::query()->where('model_type', $model_type)->orderBy('performed_at', 'desc')->paginate(request('paginate', 10));
+        }
         return HistoryLogResource::collection($logs);
     }
 
