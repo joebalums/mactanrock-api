@@ -15,6 +15,35 @@ use App\Http\Resources\InventoryLocationResource;
 
 class InventoryServices
 {
+    public function getBranchInventoryList()
+    {
+        event(new RequestOrderEvents('test inventory'));
+
+        return InventoryLocation::query()
+            ->with([
+                'location',
+                'inventory',
+                'product',
+                'branch'
+            ])
+            ->when(
+                request('location_id'),
+                fn (Builder $builder) => $builder->where('branch_id', request('location_id'))
+            )
+            ->when(
+                request('keyword'),
+                function (Builder $q) {
+                    $keyword = request('keyword');
+                    return $q->whereRaw("CONCAT_WS(' ',name,code,brand) like '%{$keyword}%' ");
+                }
+            )
+            ->when(
+                request('column') && request('direction'),
+                fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
+            )
+            ->paginate(request('paginate', 10));
+    }
+
     public function getList()
     {
         event(new RequestOrderEvents('test inventory'));
@@ -149,6 +178,18 @@ class InventoryServices
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )->get();
     }
+    public function getLowStockCount()
+    {
+        return InventoryLocation::query()
+            ->join('products', 'inventory_locations.product_id', '=', 'products.id')
+            ->select([
+                'inventory_locations.*'
+            ])->whereRaw('inventory_locations.quantity <= inventory_locations.stock_low_level')
+            ->when(
+                request('column') && request('direction'),
+                fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
+            )->count();
+    }
 
     public function getEmptyStock()
     {
@@ -165,6 +206,20 @@ class InventoryServices
                 fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
             )
             ->get();
+    }
+
+    public function getEmptyStockCount()
+    {
+        return InventoryLocation::query()
+            ->join('products', 'inventory_locations.product_id', '=', 'products.id')
+            ->select([
+                'inventory_locations.*'
+            ])->where('inventory_locations.quantity', '0')
+            ->when(
+                request('column') && request('direction'),
+                fn (Builder $builder) => $builder->orderBy(request('column'), request('direction'))
+            )
+            ->count();
     }
 
     public function updateTriggers(int $id)
@@ -415,16 +470,28 @@ class InventoryServices
         }
     }
 
-    public function countItemWithNoInventoryRecords()
+    public function countItemWithNoInventoryRecords($branch_id = 0)
     {
         $user = request()->user();
 
         $product_ids_with_location = InventoryLocation::query()
-            ->where('branch_id', $user->branch_id)
+            ->where('branch_id', $branch_id > 1 ? $branch_id : $user->branch_id)
             ->pluck('product_id');
-        $product_ids = Product::query()->whereNotIn('id', $product_ids_with_location)->pluck('id');
+        $product_ids = Product::query()->whereNotIn('id', $product_ids_with_location)->limit(500)->pluck('id');
 
         return $product_ids;
+    }
+
+    public function getCountItemWithNoInventoryRecords($branch_id = 0)
+    {
+        $user = request()->user();
+
+        $product_ids_with_location = InventoryLocation::query()
+            ->where('branch_id', $branch_id > 1 ? $branch_id : $user->branch_id)
+            ->pluck('product_id');
+        $count = Product::query()->whereNotIn('id', $product_ids_with_location)->pluck('id')->count();
+
+        return $count;
     }
 
     public function populateInventories()
@@ -433,11 +500,12 @@ class InventoryServices
         try {
             DB::beginTransaction();
             $user = request()->user();
-            $ids = $this->countItemWithNoInventoryRecords()[0];
+            $branch_id = request()->location_id ? request()->location_id : $user->branch_id;
+            $ids = $this->countItemWithNoInventoryRecords($branch_id);
 
             $data = [];
             foreach ($ids as $id) {
-                $data[] = ['product_id' => $id, 'branch_id' => $user->branch_id];
+                $data[] = ['product_id' => $id, 'branch_id' => $branch_id];
             }
             $locations_data = [];
             foreach (array_chunk($data, 150) as $dataToInsert) {
@@ -445,7 +513,7 @@ class InventoryServices
                     $locations_data[] = InventoryLocation::firstOrCreate($data_, $data_);
                 }
             }
-            // $data[] = ['product_id' => $ids[0][0], 'branch_id' => $user->branch_id];
+            // $data[] = ['product_id' => $ids[0][0], 'branch_id' => $branch_id];
 
 
             $inventories = [];
@@ -456,7 +524,7 @@ class InventoryServices
                         'inventory_location_id' => $location->id,
                         'quantity' => $location->quantity ?? 0,
                         'receive_id' => $user->id,
-                        'branch_id' => $user->branch_id,
+                        'branch_id' => $branch_id,
                         'product_id' => $location->product_id
                     ];
                     $inventories[] =  Inventory::firstOrCreate([

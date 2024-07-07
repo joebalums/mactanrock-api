@@ -22,11 +22,14 @@ class InventoryController
 {
     public function index(InventoryServices $services)
     {
+        if (request()->get('location_id') > 1) {
+            $services->populateInventories(request()->get('location_id'));
+        }
         request()->validate([
             'column' => ['nullable', Rule::in(['name', 'description', 'quantity', 'code', 'brand'])],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
-        return InventoryLocationResource::collection($services->getList());
+        return InventoryLocationResource::collection($services->getBranchInventoryList());
     }
     public function itemCosting(InventoryServices $services)
     {
@@ -110,9 +113,9 @@ class InventoryController
     public function status(InventoryServices $services)
     {
         return [
-            'low' => ProductResource::collection($services->getLowStock()),
-            'empty' => ProductResource::collection($services->getEmptyStock()),
-            'pending' => $services->countItemWithNoInventoryRecords()
+            'low' => $services->getLowStockCount(), //ProductResource::collection(),
+            'empty' => $services->getEmptyStockCount(), //ProductResource::collection(),
+            'pending' => $services->getCountItemWithNoInventoryRecords(request('location_id'))
         ];
     }
     public function updateBeginningBalance(InventoryServices $inventory_services, $id)
@@ -123,12 +126,12 @@ class InventoryController
             $data = [
                 'transacted_by_id' => $user->id,
                 'accepted_by_id' => $user->id,
-                'from_branch_id' => $user->branch_id,
-                'to_branch_id' => $user->branch_id,
+                'from_branch_id' => request('branch_id') ? request('branch_id') : $user->branch_id,
+                'to_branch_id' => request('branch_id') ? request('branch_id') : $user->branch_id,
                 'price' => request('price'),
                 'description' => 'updated beginning balance'
             ];
-            $stock_in = $inventory_services->stockIn(request('product_id'), request('qty'), $data);
+            $stock_in = $inventory_services->stockIn(request('product_id'), request('qty'), $data, request('branch_id') ? request('branch_id') : $user->branch_id);
 
             DB::commit();
             return response(['stock_in' => $stock_in]);

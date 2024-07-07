@@ -28,7 +28,7 @@ class InventoryLocationResource extends JsonResource
             'product' => $this->product ? $this->product : null,
             'branch' => $this->branch ? $this->branch : null,
             'inventory' => $this->inventory ? $this->inventory : null,
-            'is_manageable' => $this->branch_id == request()->user()->branch_id,
+            'is_manageable' => request()->user()->branch_id == 1 ? true : ($this->branch_id == request()->user()->branch_id),
         ];
     }
 }
