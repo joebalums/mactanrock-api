@@ -20,6 +20,13 @@ class InventoryServices
         event(new RequestOrderEvents('test inventory'));
 
         return InventoryLocation::query()
+            ->join('products', 'inventory_locations.product_id', '=', 'products.id')
+            ->select([
+                'inventory_locations.*', 'products.name as name', 'products.account_code as account_code',
+                'products.code as code', 'products.description as description', 'products.unit_measurement',
+                'products.unit_value', 'products.brand as brand', 'products.category_id',
+                "products.id as productId"
+            ])
             ->with([
                 'location',
                 'inventory',
@@ -52,9 +59,9 @@ class InventoryServices
             ->with(['location'])
             ->join('products', 'inventory_locations.product_id', '=', 'products.id')
             ->select([
-                'inventory_locations.*', 'products.name', 'products.account_code',
-                'products.code', 'products.description', 'products.unit_measurement',
-                'products.unit_value', 'products.brand', 'products.category_id',
+                'inventory_locations.*', 'products.name as name', 'products.account_code as account_code',
+                'products.code as code', 'products.description as description', 'products.unit_measurement',
+                'products.unit_value', 'products.brand as brand', 'products.category_id',
                 "products.id as productId"
             ])
             ->when(
