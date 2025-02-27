@@ -33,6 +33,7 @@ class InventoryTransactionResource extends JsonResource
             'inventory_id' => $this->inventory_id,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'quantity_balance' => $this->quantity_balance ?? 0,
             'inventory' => InventoryResource::make($this->whenLoaded('inventory')),
             'receive' => ReceiveResource::make($this->whenLoaded('receive')),
             'request' => RequisitionResource::make($this->whenLoaded('request'))

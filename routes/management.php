@@ -21,6 +21,7 @@ Route::prefix('management')->group(function () {
     Route::post('import-products', [ProductsController::class, 'import']);
     Route::post('import-suppliers', [SupplierController::class, 'import']);
     Route::get('get-model-history', [UsersController::class, 'getModelHistory']);
+    Route::get('get-product-with-stock/{id}', [ProductsController::class, 'getProductWithStock']);
 
     Route::patch('user-password/{id}', [UserPasswordController::class, 'update']);
     Route::patch('password', [PasswordController::class, 'update']);

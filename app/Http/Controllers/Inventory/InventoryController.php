@@ -96,7 +96,16 @@ class InventoryController
     public function histories($id, InventoryServices $services)
     {
         $inventoryIDS = Inventory::query()->where('inventory_location_id', $id)->pluck('id');
-        $histories = InventoryTransaction::query()->whereIn('inventory_id', $inventoryIDS)->get();
+        $histories = InventoryTransaction::query()
+            ->whereIn('inventory_id', $inventoryIDS)
+            ->oldest()
+            ->get()
+            ->map(function ($history) {
+                static $quantity_balance = 0;
+                $quantity_balance += $history->movement === 'in' ? $history->quantity : -$history->quantity;
+                $history->quantity_balance = $quantity_balance;
+                return $history;
+            });
         return response([
             'data' => InventoryTransactionResource::collection($histories->load(
                 ['receive', 'request', 'inventory']

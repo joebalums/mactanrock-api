@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Imports\ImportProducts;
+use App\Models\InventoryLocation;
 use App\Models\Product;
 use App\Services\ProductServices;
 use Illuminate\Http\Request;
@@ -46,5 +47,12 @@ class ProductsController extends Controller
     {
         $product = Product::query()->with(['category'])->findOrFail($id);
         return ProductResource::make($product);
+    }
+
+    public function getProductWithStock(int $id)
+    {
+        $product = Product::query()->with(['category'])->findOrFail($id);
+        $stock = InventoryLocation::query()->where('product_id', $id)->where('branch_id', request()->user()->branch_id)->first();
+        return ['product' => ProductResource::make($product), 'stock' => $stock];
     }
 }
