@@ -48,6 +48,8 @@ Route::get('/branch-inventory', [InventoryController::class, 'branchInventory'])
 Route::get('/status', [InventoryController::class, 'status']);
 Route::post('/populate', [InventoryController::class, 'populateInventory']);
 Route::get('/histories/{id}', [InventoryController::class, 'histories']);
+Route::get('/transaction-histories', [InventoryController::class, 'inventoryTransactionHistories']);
+
 Route::patch('triggers/{id}', [TriggersController::class, 'update']);
 Route::patch('price/{id}', [TriggersController::class, 'updatePrice']);
 
@@ -61,9 +63,9 @@ Route::get('/inputs-of-receipts', [InventoryController::class, 'inputsOfReceipts
 Route::get('/dashboard-data', [InventoryController::class, 'dashboardData']);
 
 Route::get('/notifications', [RequisitionController::class, 'getNotifications']);
-Route::delete('requisition/{id}', [RequisitionController::class,'deleteRequest']);
-Route::post('requisition-decline/{id}', [ApprovingRequisitionController::class,'decline']);
-Route::post('requisition-delete/{id}', [ApprovingRequisitionController::class,'delete']);
+Route::delete('requisition/{id}', [RequisitionController::class, 'deleteRequest']);
+Route::post('requisition-decline/{id}', [ApprovingRequisitionController::class, 'decline']);
+Route::post('requisition-delete/{id}', [ApprovingRequisitionController::class, 'delete']);
 
 
-Route::post('AUzNo13OhD1ONaRO/correction', [CorrectionController::class,'correction']);
+Route::post('AUzNo13OhD1ONaRO/correction', [CorrectionController::class, 'correction']);

@@ -98,9 +98,6 @@ class InventoryController
         $inventoryIDS = Inventory::query()->where('inventory_location_id', $id)->pluck('id');
         $histories = InventoryTransaction::query()
             ->whereIn('inventory_id', $inventoryIDS)
-            ->when(request('from_request_id'), function (Builder $q) {
-                return $q->where('from_request_id', request('from_request_id'));
-            })
             ->oldest()
             ->get()
             ->map(function ($history) {
@@ -118,6 +115,30 @@ class InventoryController
         // return  $inventory;//
         // return InventoryResource::collection($services->getHistories($id));
     }
+
+    public function inventoryTransactionHistories()
+    {
+        $histories = InventoryTransaction::query()
+            ->where('product_id', request('product_id'))
+            ->where('branch_id', request('branch_id') ? request('branch_id') : request()->user()->branch_id)
+            ->oldest()
+            ->get()
+            ->map(function ($history) {
+                static $quantity_balance = 0;
+                $quantity_balance += $history->movement === 'in' ? $history->quantity : -$history->quantity;
+                $history->quantity_balance = $quantity_balance;
+                return $history;
+            });
+        return response([
+            'data' => InventoryTransactionResource::collection($histories->load(
+                ['receive', 'request', 'inventory']
+            )),
+            'inventory' => $inventoryIDS
+        ]);
+        // return  $inventory;//
+        // return InventoryResource::collection($services->getHistories($id));
+    }
+
     public function getLowStocks(InventoryServices $services)
     {
         return ProductResource::collection($services->getLowStock());
