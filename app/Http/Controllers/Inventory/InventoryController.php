@@ -39,7 +39,11 @@ class InventoryController
         ]);
         $items = $services->getItemCosting();
         return ProductLocationResource::collection($items->load([
-            'product', 'product.category', 'branch', 'location', 'inventory'
+            'product',
+            'product.category',
+            'branch',
+            'location',
+            'inventory'
         ]));
         // return ProductResource::collection($items);
     }
@@ -152,8 +156,8 @@ class InventoryController
                 'to_branch_id' => $user->branch_id,
                 'description' => 'repack item'
             ];
-            $stock_in = $inventory_services->stockIn(request('output_product_id'), request('output_qty'), $data);
-            $stock_out = $inventory_services->stockOut(request('product_id'), request('qty'), $data);
+            $stock_in = $inventory_services->stockIn(request('output_product_id'), request('output_qty'), $data, $user->branch_id);
+            $stock_out = $inventory_services->stockOut(request('product_id'), request('qty'), $data, $user->branch_id);
 
             DB::commit();
             return response(['stock_in' => $stock_in, 'stock_out' => $stock_out]);
@@ -233,7 +237,7 @@ class InventoryController
             ->groupBy('inventory_id')
             ->when(
                 request()->get('column') && request()->get('direction'),
-                fn ($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
+                fn($q) => $q->orderBy(request()->get('column'), request()->get('direction'))
             )
 
             ->paginate(request('paginate') ? (request('paginate') == 'all' ?  -1 : request('paginate')) : 10);
