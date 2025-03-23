@@ -19,6 +19,9 @@ class ReceivingService
                 $keyword = request('keyword');
                 return $q->whereRaw("CONCAT_WS(' ',purchase_order,project_name,status,account_code) like '%{$keyword}%' ");
             })
+            ->when(request('search_value'), function (Builder $q) {
+                return $q->where(request('search_column'), request('search_value'));
+            })
             ->when(request('date'), function (Builder $q) {
                 return $q->where('date_receive', request('date'));
             })

@@ -66,6 +66,11 @@ class InventoryController
                     return $q->whereBetween('created_at', [$date_from . ' 00:00:00', $date_to . ' 23:59:59']);
                 }
             )
+            ->when(request('category_id'), function (Builder $q) {
+                return $q->whereHas('inventory.product', function ($query) {
+                    $query->where('category_id', request('category_id'));
+                });
+            })
             ->get();
         return response(['data' => $histories, 'histories' => $histories]);
         // return ProductResource::collection($services->getItemCosting());
@@ -78,8 +83,25 @@ class InventoryController
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
 
-        $histories = InventoryTransaction::query()->with('inventory', 'inventory.product', 'inventory.location')->where('movement', 'in')->get();
-        return response(['data' => $histories, 'histories' => $histories]);
+        $histories = InventoryTransaction::query()
+            ->with('inventory',  'inventory.product', 'inventory.location')
+            ->when(
+                request('date_from') && request('date_to'),
+                function (Builder $q) {
+                    $date_from = request('date_from');
+                    $date_to = request('date_to');
+                    return $q->whereBetween('created_at', [$date_from . ' 00:00:00', $date_to . ' 23:59:59']);
+                }
+            )
+            ->when(request('category_id'), function (Builder $q) {
+                return $q->whereHas('inventory.product', function ($query) {
+                    $query->where('category_id', request('category_id'));
+                });
+            })
+            ->where('movement', 'in')
+            ->get();
+        $histories->load(['inventory', 'receive', 'request']);
+        return response(['data' => InventoryTransactionResource::collection($histories), 'histories' => $histories]);
         // return ProductResource::collection($services->getItemCosting());
     }
 
