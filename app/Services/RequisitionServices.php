@@ -160,9 +160,60 @@ class RequisitionServices
 
             $products = InventoryLocation::query()
                 ->whereIn('id', request('inventory_id'))
-                ->where('branch_id', request()->get('purpose') == "internal_use" ? $user->branch_id : 1)
+                // ->where('branch_id', request()->get('purpose') == "internal_use" ? $user->branch_id : 1)
                 ->get();
 
+
+            $groupByLocations = $products->groupBy('branch_id')->all();
+
+            $qtyResolver = [];
+
+            foreach (request('inventory_id') as $key => $product) {
+                $qtyResolver[$product] = request()->get('quantity')[$key] ?? 0;
+            }
+
+            foreach ($groupByLocations as $key => $data) {
+                $info = new RequisitionDetail();
+                $info->location_id = $key;
+                $info->requisition_id = $requisition->id;
+                $info->save();
+                $items = [];
+                foreach ($data as $item) {
+                    $qty = $qtyResolver[$item->id] ?? 0;
+                    if ($qty > 0) {
+                        $items[] = [
+                            'requisition_detail_id' => $info->id,
+                            'request_quantity' => $qty,
+                            'full_filled_quantity' => 0,
+                            'product_id' => $item->product_id,
+                            'status' => 'incomplete'
+                        ];
+                    }
+                }
+                RequisitionItem::query()->insert($items);
+            }
+
+            DB::commit();
+            return RequisitionResource::make($this->show($requisition->id));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
+        }
+    }
+
+
+    public function update($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = request()->user();
+            $requisition = Requisition::query()->findOrFail($id);
+
+            $products = InventoryLocation::query()
+                ->whereIn('id', request('inventory_id'))
+                // ->where('branch_id', request()->get('purpose') == "internal_use" ? $user->branch_id : 1)
+                ->get();
 
             $groupByLocations = $products->groupBy('branch_id')->all();
 

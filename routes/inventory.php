@@ -22,6 +22,7 @@ Route::get('requisition', [RequisitionController::class, 'index']);
 Route::get('request', [RequestController::class, 'index']);
 Route::get('request/{id}', [RequestController::class, 'show']);
 Route::post('requisition', [RequisitionController::class, 'store']);
+Route::patch('requisition/{id}', [RequisitionController::class, 'update']);
 Route::post('requisition-approved/{id}', [ApprovingRequisitionController::class, 'update']);
 Route::get('requisition/{id}', [RequisitionController::class, 'show']);
 Route::post('requisition-accept/{id}', [RequisitionController::class, 'accept']);

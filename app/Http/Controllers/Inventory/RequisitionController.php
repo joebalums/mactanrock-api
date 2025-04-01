@@ -24,6 +24,11 @@ class RequisitionController extends Controller
         // return RequisitionResource::make($services->create());
     }
 
+    public function update(RequisitionServices $services, int $id)
+    {
+        return $services->update($id);
+    }
+
     public function show(RequisitionServices $services, int $id)
     {
         return RequisitionResource::make($services->show($id));
