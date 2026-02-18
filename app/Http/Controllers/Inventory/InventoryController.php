@@ -231,7 +231,7 @@ class InventoryController
                 'transacted_by_id' => $user->id,
                 'accepted_by_id' => $user->id,
                 'from_branch_id' => $user->branch_id,
-                'to_branch_id' => $user->branch_id,
+                'to_branch_id' => request('branch_id'),
                 'description' => request('correction_reason') ? request('correction_reason') : 'inventory correction',
                 'correction_reason' => request('correction_reason') ? request('correction_reason') : 'inventory correction'
             ];
@@ -239,7 +239,7 @@ class InventoryController
                 request('product_id'),
                 request('correction_amount'),
                 $data,
-                $user->branch_id
+                request('branch_id') ? request('branch_id') : $user->branch_id
             );
 
             DB::commit();
