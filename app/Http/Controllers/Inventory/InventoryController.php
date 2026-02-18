@@ -220,6 +220,36 @@ class InventoryController
             return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
         }
     }
+
+
+    public function inventoryCorrection(InventoryServices $inventory_services)
+    {
+        try {
+            DB::beginTransaction();
+            $user = request()->user();
+            $data = [
+                'transacted_by_id' => $user->id,
+                'accepted_by_id' => $user->id,
+                'from_branch_id' => $user->branch_id,
+                'to_branch_id' => $user->branch_id,
+                'description' => request('correction_reason') ? request('correction_reason') : 'inventory correction',
+                'correction_reason' => request('correction_reason') ? request('correction_reason') : 'inventory correction'
+            ];
+            $adjustments_data = $inventory_services->stockAdjustments(
+                request('product_id'),
+                request('correction_amount'),
+                $data,
+                $user->branch_id
+            );
+
+            DB::commit();
+            return response(['adjustments_data' => $adjustments_data]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
+        }
+    }
+
     public function populateInventory(InventoryServices $inventoryServices)
     {
         return $inventoryServices->populateInventories();

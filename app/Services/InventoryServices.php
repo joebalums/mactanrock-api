@@ -41,15 +41,14 @@ class InventoryServices
             ])
             ->when(
                 request('location_id'),
-                function(Builder $builder){
-                    if((request('location_id') == 1 || request('location_id') == 2) && request('request_order') == 'yes'){
+                function (Builder $builder) {
+                    if ((request('location_id') == 1 || request('location_id') == 2) && request('request_order') == 'yes') {
                         return $builder
-                        ->where('branch_id', request('location_id'))
-                        ->where('code', 'like', request('location_id') == 1 ? '%WHSE%' : '%BULA%');
-                    }else{
+                            ->where('branch_id', request('location_id'))
+                            ->where('code', 'like', request('location_id') == 1 ? '%WHSE%' : '%BULA%');
+                    } else {
                         return $builder->where('branch_id', request('location_id'));
                     }
-                    
                 }
             )
             ->when(
@@ -476,34 +475,70 @@ class InventoryServices
             return $e->getMessage();
         }
     }
+
+
+    public function stockAdjustments(
+        int|Product $product,
+        int $amount, //correction_amount
+        array $data = [],
+        int $branch_id = 0
+    ) {
+        try {
+            $inventoryLocation = $this->resolveProduct($product, $branch_id);
+
+            $stock = $this->resolveStockInventory($inventoryLocation);
+            $amount = $amount;
+            $stock->increment('quantity', $amount);
+            $this->transaction($stock->id, [
+                'quantity' => abs($amount),
+                'branch_id' => $inventoryLocation->branch_id,
+                'transacted_by_id' => $data['transacted_by_id'],
+                'accepted_by_id' => $data['accepted_by_id'],
+                'from_request_id' => $data['from_request_id'] ?? null,
+                'from_branch_id' => $data['from_branch_id'],
+                'to_branch_id' => $data['to_branch_id'],
+                'price' => $stock->price,
+                'movement' => $amount > 0 ? InventoryMovementType::In : InventoryMovementType::Out,
+                'action' => InventoryActionType::Manual,
+                'details' => $data['correction_reason'],
+                'product_id' => $product instanceof  Product ? $product->id : $product,
+            ]);
+            $inventoryLocation->increment('total_quantity', $stock->total_quantity + $amount);
+            $inventoryLocation->increment('quantity', $stock->total_quantity + $amount);
+            return InventoryLocationResource::make($inventoryLocation);
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
     public function stockOut(int|Product $product, int $amount /*quantity*/, array $data = [], int $branch_id = 0)
     {
         try {
             DB::beginTransaction();
             $inventoryLocation = $this->resolveProduct($product, $branch_id);
 
-                $stock = $this->resolveStockInventory($inventoryLocation);
+            $stock = $this->resolveStockInventory($inventoryLocation);
 
-                $amount = $amount;
-                $stock->decrement('quantity', $amount);
-                $transactionData = [
-                    'quantity' => $amount,
-                    'branch_id' => $inventoryLocation->branch_id,
-                    'transacted_by_id' => $data['transacted_by_id'],
-                    'accepted_by_id' => $data['accepted_by_id'],
-                    'from_branch_id' => $data['from_branch_id'],
-                    'price' => $data['price'] ?? $inventoryLocation->price,
-                    'from_request_id' => $data['from_request_id'] ?? null,
-                    'to_branch_id' => $data['to_branch_id'],
-                    'movement' => InventoryMovementType::Out,
-                    'action' => $data['action'] ?? InventoryActionType::Auto,
-                    'details' => $data['description'] ?? '',
-                    'product_id' => $stock->product_id,
-                ];
-                $this->transaction($stock->id, $transactionData);
+            $amount = $amount;
+            $stock->decrement('quantity', $amount);
+            $transactionData = [
+                'quantity' => $amount,
+                'branch_id' => $inventoryLocation->branch_id,
+                'transacted_by_id' => $data['transacted_by_id'],
+                'accepted_by_id' => $data['accepted_by_id'],
+                'from_branch_id' => $data['from_branch_id'],
+                'price' => $data['price'] ?? $inventoryLocation->price,
+                'from_request_id' => $data['from_request_id'] ?? null,
+                'to_branch_id' => $data['to_branch_id'],
+                'movement' => InventoryMovementType::Out,
+                'action' => $data['action'] ?? InventoryActionType::Auto,
+                'details' => $data['description'] ?? '',
+                'product_id' => $stock->product_id,
+            ];
+            $this->transaction($stock->id, $transactionData);
             $inventoryLocation->decrement('total_quantity', $amount);
             DB::commit();
-            return  ['$transactionData'=>$transactionData];
+            return  ['$transactionData' => $transactionData];
         } catch (\Exception $e) {
             DB::rollBack();
             return $e->getMessage();

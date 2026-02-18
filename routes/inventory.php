@@ -50,9 +50,12 @@ Route::get('/status', [InventoryController::class, 'status']);
 Route::post('/populate', [InventoryController::class, 'populateInventory']);
 Route::get('/histories/{id}', [InventoryController::class, 'histories']);
 Route::get('/transaction-histories', [InventoryController::class, 'inventoryTransactionHistories']);
+Route::patch('/inventory-correction', [InventoryController::class, 'inventoryCorrection']);
 
 Route::patch('triggers/{id}', [TriggersController::class, 'update']);
 Route::patch('price/{id}', [TriggersController::class, 'updatePrice']);
+
+
 
 Route::post('/repack', [InventoryController::class, 'repackItem']);
 Route::patch('/beginning-balance/{id}', [InventoryController::class, 'updateBeginningBalance']);
