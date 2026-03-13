@@ -44,7 +44,7 @@ $requesterRoles = implode(',', [
 Route::get('receiving', [ReceivingController::class, 'index']);
 Route::get('receiving/{id}', [ReceivingController::class, 'show']);
 Route::post('receiving', [ReceivingController::class, 'store'])->middleware("role:{$operationalRoles}");
-Route::patch('receiving-complete', [ReceivingCompleteController::class, 'update'])->middleware("role:{$operationalRoles}");
+Route::patch('receiving-complete/{id}', [ReceivingCompleteController::class, 'update'])->middleware("role:{$operationalRoles}");
 
 Route::get('requisition', [RequisitionController::class, 'index']);
 Route::get('request', [RequestController::class, 'index']);
