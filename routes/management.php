@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserType;
 use App\Http\Controllers\Managements\BranchesController;
 use App\Http\Controllers\Managements\CategoriesController;
 use App\Http\Controllers\Managements\PasswordController;
@@ -10,8 +11,9 @@ use App\Http\Controllers\Managements\UsersController;
 use App\Http\Controllers\UnitsController;
 use Illuminate\Support\Facades\Route;
 
+$adminRoles = UserType::ADMIN->value;
 
-Route::prefix('management')->group(function () {
+Route::prefix('management')->middleware("role:{$adminRoles}")->group(function () {
     Route::apiResource('users', UsersController::class);
     Route::apiResource('categories', CategoriesController::class);
     Route::apiResource('units', UnitsController::class);
