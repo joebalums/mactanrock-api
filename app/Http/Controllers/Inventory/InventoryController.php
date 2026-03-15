@@ -97,7 +97,6 @@ class InventoryController
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
         $branchId = $this->resolveReportBranchId();
-
         $histories = InventoryTransaction::query()
             ->with('inventory',  'inventory.product', 'inventory.location')
             ->when(
@@ -119,7 +118,7 @@ class InventoryController
             })
             ->where('movement', 'in')
             ->get();
-        $histories->load(['inventory', 'receive', 'request']);
+        $histories->load(['inventory', 'inventory.receives', 'receive', 'request']);
         return response(['data' => InventoryTransactionResource::collection($histories), 'histories' => $histories]);
         // return ProductResource::collection($services->getItemCosting());
     }
@@ -323,6 +322,7 @@ class InventoryController
             ->with('inventory', 'inventory.product', 'inventory.location')
             ->where('branch_id', $user->branch_id)
             ->groupBy('inventory_id')
+            ->limit(10)
             ->get();
 
         $levels_per_product = InventoryLocation::query()
