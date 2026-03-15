@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use App\Enums\UserType;
 use App\Http\Requests\BeginningBalanceRequest;
 use App\Http\Requests\InventoryCorrectionRequest;
 use App\Http\Requests\RepackRequest;
@@ -39,10 +40,11 @@ class InventoryController
     public function itemCosting(InventoryServices $services)
     {
         request()->validate([
+            'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
             'column' => ['nullable', Rule::in(['name', 'description', 'quantity', 'code', 'brand'])],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
-        $items = $services->getItemCosting();
+        $items = $services->getItemCosting($this->resolveReportBranchId());
         return ProductLocationResource::collection($items->load([
             'product',
             'product.category',
@@ -56,13 +58,19 @@ class InventoryController
     public function warehouseIssuances(InventoryServices $services)
     {
         request()->validate([
+            'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
             'column' => ['nullable', Rule::in(['name', 'description', 'quantity', 'code', 'brand'])],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
+        $branchId = $this->resolveReportBranchId();
 
         $histories = InventoryTransaction::query()
             ->with('inventory', 'inventory.product', 'inventory.location')
             ->where('movement', 'out')
+            ->when(
+                $branchId !== null,
+                fn(Builder $q) => $q->where('branch_id', $branchId)
+            )
             ->when(
                 request('date_from') && request('date_to'),
                 function (Builder $q) {
@@ -84,12 +92,18 @@ class InventoryController
     public function inputsOfReceipts(InventoryServices $services)
     {
         request()->validate([
+            'branch_id' => ['nullable', 'integer', 'exists:branches,id'],
             'column' => ['nullable', Rule::in(['name', 'description', 'quantity', 'code', 'brand'])],
             'direction' => ['nullable', Rule::in(['asc', 'desc'])]
         ]);
+        $branchId = $this->resolveReportBranchId();
 
         $histories = InventoryTransaction::query()
             ->with('inventory',  'inventory.product', 'inventory.location')
+            ->when(
+                $branchId !== null,
+                fn(Builder $q) => $q->where('branch_id', $branchId)
+            )
             ->when(
                 request('date_from') && request('date_to'),
                 function (Builder $q) {
@@ -374,5 +388,24 @@ class InventoryController
                 $field => [$result],
             ]);
         }
+    }
+
+    private function resolveReportBranchId(): ?int
+    {
+        $user = request()->user();
+
+        if ($this->canViewAllReportBranches()) {
+            return request()->filled('branch_id') ? (int) request('branch_id') : null;
+        }
+
+        return (int) $user->branch_id;
+    }
+
+    private function canViewAllReportBranches(): bool
+    {
+        $user = request()->user();
+
+        return $user->user_type === UserType::ADMIN->value
+            && (int) $user->branch_id === 1;
     }
 }

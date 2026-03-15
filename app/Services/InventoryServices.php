@@ -118,9 +118,8 @@ class InventoryServices
             )
             ->paginate(request('paginate', 10));
     }
-    public function getItemCosting()
+    public function getItemCosting(?int $branchId = null)
     {
-        $user = request()->user();
         return InventoryLocation::query()
             // ->with(['location'])
             ->join('products', 'inventory_locations.product_id', '=', 'products.id')
@@ -144,7 +143,10 @@ class InventoryServices
                     return $q->where('products.category_id', $category_id);
                 }
             )
-            ->where('branch_id', $user->branch_id)
+            ->when(
+                $branchId !== null,
+                fn(Builder $q) => $q->where('inventory_locations.branch_id', $branchId)
+            )
             ->when(
                 request('column') && request('direction'),
                 fn(Builder $builder) => $builder->orderBy(request('column'), request('direction'))
