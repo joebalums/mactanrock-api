@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use App\Http\Requests\BeginningBalanceRequest;
+use App\Http\Requests\InventoryCorrectionRequest;
+use App\Http\Requests\RepackRequest;
 use App\Http\Resources\InventoryLocationResource;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\InventoryResource;
@@ -16,7 +19,9 @@ use App\Models\Requisition;
 use App\Services\InventoryServices;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class InventoryController
 {
@@ -176,33 +181,38 @@ class InventoryController
             'pending' => $services->getCountItemWithNoInventoryRecords(request('location_id'))
         ];
     }
-    public function updateBeginningBalance(InventoryServices $inventory_services, $id)
+    public function updateBeginningBalance(BeginningBalanceRequest $request, InventoryServices $inventory_services, $id)
     {
         try {
             DB::beginTransaction();
-            $user = request()->user();
+            $user = $request->user();
+            $branchId = $request->input('branch_id') ?: $user->branch_id;
             $data = [
                 'transacted_by_id' => $user->id,
                 'accepted_by_id' => $user->id,
-                'from_branch_id' => request('branch_id') ? request('branch_id') : $user->branch_id,
-                'to_branch_id' => request('branch_id') ? request('branch_id') : $user->branch_id,
-                'price' => request('price'),
+                'from_branch_id' => $branchId,
+                'to_branch_id' => $branchId,
+                'price' => $request->input('price'),
                 'description' => 'updated beginning balance'
             ];
-            $stock_in = $inventory_services->stockIn(request('product_id'), request('qty'), $data, request('branch_id') ? request('branch_id') : $user->branch_id);
+            $stock_in = $inventory_services->stockIn($request->integer('product_id'), $request->integer('qty'), $data, $branchId);
+            $this->ensureInventoryOperationSucceeded($stock_in, 'qty');
 
             DB::commit();
             return response(['stock_in' => $stock_in]);
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
-            return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
+            throw $e;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return response(['error' => $e->getMessage(), 'data' => $request->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 500);
         }
     }
-    public function repackItem(InventoryServices $inventory_services)
+    public function repackItem(RepackRequest $request, InventoryServices $inventory_services)
     {
         try {
             DB::beginTransaction();
-            $user = request()->user();
+            $user = $request->user();
             $data = [
                 'transacted_by_id' => $user->id,
                 'accepted_by_id' => $user->id,
@@ -210,43 +220,53 @@ class InventoryController
                 'to_branch_id' => $user->branch_id,
                 'description' => 'repack item'
             ];
-            $stock_in = $inventory_services->stockIn(request('output_product_id'), request('output_qty'), $data, $user->branch_id);
-            $stock_out = $inventory_services->stockOut(request('product_id'), request('qty'), $data, $user->branch_id);
+            $stock_in = $inventory_services->stockIn($request->integer('output_product_id'), $request->integer('output_qty'), $data, $user->branch_id);
+            $this->ensureInventoryOperationSucceeded($stock_in, 'output_qty');
+
+            $stock_out = $inventory_services->stockOut($request->integer('product_id'), $request->integer('qty'), $data, $user->branch_id);
+            $this->ensureInventoryOperationSucceeded($stock_out, 'qty');
 
             DB::commit();
             return response(['stock_in' => $stock_in, 'stock_out' => $stock_out]);
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
-            return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
+            throw $e;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return response(['error' => $e->getMessage(), 'data' => $request->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 500);
         }
     }
 
 
-    public function inventoryCorrection(InventoryServices $inventory_services)
+    public function inventoryCorrection(InventoryCorrectionRequest $request, InventoryServices $inventory_services)
     {
         try {
             DB::beginTransaction();
-            $user = request()->user();
+            $user = $request->user();
             $data = [
                 'transacted_by_id' => $user->id,
                 'accepted_by_id' => $user->id,
                 'from_branch_id' => $user->branch_id,
-                'to_branch_id' => request('branch_id'),
-                'description' => request('correction_reason') ? request('correction_reason') : 'inventory correction',
-                'correction_reason' => request('correction_reason') ? request('correction_reason') : 'inventory correction'
+                'to_branch_id' => $request->input('branch_id'),
+                'description' => $request->input('correction_reason'),
+                'correction_reason' => $request->input('correction_reason')
             ];
             $adjustments_data = $inventory_services->stockAdjustments(
-                request('product_id'),
-                request('correction_amount'),
+                $request->integer('product_id'),
+                $request->integer('correction_amount'),
                 $data,
-                request('branch_id') ? request('branch_id') : $user->branch_id
+                $request->input('branch_id') ? (int) $request->input('branch_id') : $user->branch_id
             );
+            $this->ensureInventoryOperationSucceeded($adjustments_data, 'correction_amount');
 
             DB::commit();
             return response(['adjustments_data' => $adjustments_data]);
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
             DB::rollBack();
-            return response(['error' => $e->getMessage(), 'data' => request()->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 200);
+            throw $e;
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return response(['error' => $e->getMessage(), 'data' => $request->all(), 'type' => 'error', 'message' => 'Error processing your action.'], 500);
         }
     }
 
@@ -346,4 +366,13 @@ class InventoryController
 
     //     return InventoryTransactionResource::collection($levels_per_product);
     // }
+
+    private function ensureInventoryOperationSucceeded(mixed $result, string $field): void
+    {
+        if (is_string($result)) {
+            throw ValidationException::withMessages([
+                $field => [$result],
+            ]);
+        }
+    }
 }
