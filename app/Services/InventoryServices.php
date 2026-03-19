@@ -563,13 +563,15 @@ class InventoryServices
     private function adjustInventoryQuantity(Inventory $inventory, int $delta): void
     {
         $nextQuantity = (int) $inventory->quantity + $delta;
+        $nextTotalQuantity = (int) $inventory->total_quantity + $delta;
 
-        if ($nextQuantity < 0) {
+        if ($nextTotalQuantity < 0 || $nextQuantity < 0) {
             throw ValidationException::withMessages([
                 'quantity' => ['Insufficient stock quantity for this operation.'],
             ]);
         }
 
+        $inventory->total_quantity = $nextTotalQuantity;
         $inventory->quantity = $nextQuantity;
         $inventory->save();
     }
