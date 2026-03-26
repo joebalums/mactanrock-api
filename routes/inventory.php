@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 $adminRoles = implode(',', [
     UserType::ADMIN->value,
+    UserType::AREA_MANAGER->value,
+    UserType::APPROVING_MANAGER->value,
+    UserType::WAREHOUSE_MAN->value,
 ]);
 
 $approvalRoles = implode(',', [
