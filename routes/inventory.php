@@ -67,7 +67,7 @@ Route::get('approval-issuances', [RequisitionController::class, 'issuancesForApp
 Route::get('get-receiving-issuances', [RequisitionController::class, 'receivingIssuances']);
 
 Route::post('issuances/{id}', [RequisitionController::class, 'createIssuances'])->middleware("role:{$operationalRoles}");
-Route::post('issuances-recieved/{id}', [RequisitionController::class, 'receivedIssuances'])->middleware("role:{$operationalRoles}");
+Route::post('issuances-recieved/{id}', [RequisitionController::class, 'receivedIssuances'])->middleware("role:{$requesterRoles}");
 
 Route::get('project-plant-orders', [ProjectPlantOrdersController::class, 'index']);
 Route::get('project-plant-orders/{id}', [ProjectPlantOrdersController::class, 'show']);
